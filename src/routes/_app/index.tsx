@@ -11,9 +11,9 @@ export const Route = createFileRoute('/_app/')({
 })
 
 function Dashboard() {
-  const { data: mercados = [] } = useQuery({ queryKey: ['mercados'], queryFn: () => listarMercados() })
-  const { data: produtos = [] } = useQuery({ queryKey: ['produtos'], queryFn: () => listarProdutos({ data: {} }) })
-  const { data: categorias = [] } = useQuery({ queryKey: ['categorias'], queryFn: () => listarCategorias() })
+  const { data: mercados = [] } = useQuery({ queryKey: ['mercados'], queryFn: () => listarMercados(), staleTime: 0 })
+  const { data: produtos = [] } = useQuery({ queryKey: ['produtos'], queryFn: () => listarProdutos({ data: {} }), staleTime: 0 })
+  const { data: categorias = [] } = useQuery({ queryKey: ['categorias'], queryFn: () => listarCategorias(), staleTime: 0 })
 
   const stats = [
     { label: 'Supermercados', value: mercados.length, icon: Store, color: '#16a34a', bg: '#f0fdf4' },

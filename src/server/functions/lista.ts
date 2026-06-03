@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/db'
 import { shoppingListItems, products, priceEntries, supermarkets, categories } from '#/db/schema'
-import { eq, asc } from 'drizzle-orm'
+import { eq, asc, isNull, isNotNull, or } from 'drizzle-orm'
 
 export const listarItensLista = createServerFn({ method: 'GET' }).handler(async () => {
   return db.select({
@@ -15,6 +15,7 @@ export const listarItensLista = createServerFn({ method: 'GET' }).handler(async 
     .from(shoppingListItems)
     .leftJoin(products, eq(shoppingListItems.productId, products.id))
     .leftJoin(categories, eq(products.categoryId, categories.id))
+    .where(or(isNull(shoppingListItems.productId), isNotNull(products.id)))
     .orderBy(asc(shoppingListItems.sortOrder), asc(shoppingListItems.createdAt))
 })
 

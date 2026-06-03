@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { listarItensLista, adicionarItemLista, toggleItemLista, removerItemLista, limparListaMarcados, buscarMelhorPrecoLista } from '#/server/functions/lista'
-import { listarProdutos } from '#/server/functions/produtos'
+import { buscarProdutosComPrecos } from '#/server/functions/produtos'
 import { ShoppingCart, Plus, Trash2, X, TrendingDown, Printer, Check } from 'lucide-react'
 import { useState } from 'react'
 
@@ -22,9 +22,9 @@ function ListaPage() {
 
   const { data: itens = [], isLoading } = useQuery({ queryKey: ['lista'], queryFn: () => listarItensLista() })
   const { data: produtos = [] } = useQuery({
-    queryKey: ['produtos', busca],
-    queryFn: () => listarProdutos({ data: { busca: busca || undefined, limit: 20 } }),
-    enabled: modal,
+    queryKey: ['produtos-busca', busca],
+    queryFn: () => buscarProdutosComPrecos({ data: { busca } }),
+    enabled: modal && busca.length > 1,
   })
   const { data: economia = [], isFetching: calculando } = useQuery({
     queryKey: ['economia'],
@@ -246,21 +246,36 @@ function ListaPage() {
                   <label className="label">Buscar produto</label>
                   <input className="input" placeholder="Digite o nome..." value={busca}
                     onChange={e => { setBusca(e.target.value); setProdutoId('') }} />
-                  {busca && produtos.length > 0 && (
+                  {busca.length > 1 && produtos.length > 0 && (
                     <div style={{ border: '1px solid var(--color-border)', borderRadius: '0.5rem', marginTop: '0.375rem', maxHeight: '200px', overflowY: 'auto' }}>
-                      {produtos.map(p => (
-                        <div key={p.id}
-                          onClick={() => { setProdutoId(p.id); setBusca(p.name + (p.brand ? ` (${p.brand})` : '')) }}
-                          style={{
-                            padding: '0.625rem 0.875rem', cursor: 'pointer', fontSize: '0.875rem',
-                            background: produtoId === p.id ? 'var(--color-primary-bg)' : 'white',
-                            color: produtoId === p.id ? 'var(--color-primary)' : 'var(--color-text)',
-                            borderBottom: '1px solid var(--color-border)',
-                          }}>
-                          <div style={{ fontWeight: 500 }}>{p.name}</div>
-                          {p.brand && <div style={{ fontSize: '0.75rem', color: 'var(--color-text-soft)' }}>{p.brand} · {p.categoryName}</div>}
-                        </div>
-                      ))}
+                      {produtos.map(p => {
+                        const melhorPreco = p.prices.length > 0 ? Math.min(...p.prices.map(pr => Number(pr.price))) : null
+                        return (
+                          <div key={p.id}
+                            onClick={() => { setProdutoId(p.id); setBusca(p.name + (p.brand ? ` (${p.brand})` : '')) }}
+                            style={{
+                              padding: '0.625rem 0.875rem', cursor: 'pointer', fontSize: '0.875rem',
+                              background: produtoId === p.id ? 'var(--color-primary-bg)' : 'white',
+                              color: produtoId === p.id ? 'var(--color-primary)' : 'var(--color-text)',
+                              borderBottom: '1px solid var(--color-border)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem',
+                            }}>
+                            <div>
+                              <div style={{ fontWeight: 500 }}>{p.name}</div>
+                              {(p.brand || p.categoryName) && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-soft)' }}>
+                                  {[p.brand, p.categoryName].filter(Boolean).join(' · ')}
+                                </div>
+                              )}
+                            </div>
+                            {melhorPreco !== null && (
+                              <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-primary)', flexShrink: 0 }}>
+                                R$ {melhorPreco.toFixed(2).replace('.', ',')}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
