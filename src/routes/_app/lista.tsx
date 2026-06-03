@@ -131,9 +131,9 @@ function ListaPage() {
                           <span className="badge badge-blue" style={{ marginLeft: '0.5rem' }}>×{item.quantity}</span>
                         )}
                       </div>
-                      {(item.productBrand || item.categoryName) && (
+                      {(item.productBrand || item.categoryName || item.bestSupermarket) && (
                         <div style={{ fontSize: '0.8rem', color: 'var(--color-text-soft)' }}>
-                          {[item.productBrand, item.categoryName].filter(Boolean).join(' · ')}
+                          {[item.bestSupermarket, item.productBrand, item.categoryName].filter(Boolean).join(' · ')}
                         </div>
                       )}
                     </div>

@@ -4,25 +4,28 @@ import { shoppingListItems, products, priceEntries, supermarkets, categories } f
 import { eq, asc, isNull, isNotNull, or, sql } from 'drizzle-orm'
 
 export const listarItensLista = createServerFn({ method: 'GET' }).handler(async () => {
-  // Remove itens cujo produto foi excluído OU não tem nenhum preço cadastrado
-  const invalidos = await db
-    .select({ id: shoppingListItems.id })
+  // Passo 1: IDs de produtos que têm pelo menos um preço
+  const comPreco = await db
+    .selectDistinct({ productId: priceEntries.productId })
+    .from(priceEntries)
+  const idsComPreco = comPreco.map(r => r.productId)
+
+  // Passo 2: encontra itens inválidos (produto excluído ou sem preço)
+  const todosItens = await db
+    .select({ id: shoppingListItems.id, productId: shoppingListItems.productId })
     .from(shoppingListItems)
-    .where(
-      sql`${shoppingListItems.productId} IS NOT NULL
-        AND NOT EXISTS (
-          SELECT 1 FROM price_entries
-          WHERE product_id = ${shoppingListItems.productId}
-        )`
-    )
+
+  const invalidos = todosItens
+    .filter(i => i.productId !== null && !idsComPreco.includes(i.productId))
+    .map(i => i.id)
 
   if (invalidos.length > 0) {
-    const ids = invalidos.map(i => i.id)
     await db.delete(shoppingListItems).where(
-      sql`id = ANY(ARRAY[${sql.join(ids.map(id => sql`${id}`), sql`, `)}]::text[])`
+      sql`id = ANY(ARRAY[${sql.join(invalidos.map(id => sql`${id}`), sql`, `)}]::text[])`
     )
   }
 
+  // Passo 3: busca os itens válidos
   const items = await db.select({
     id: shoppingListItems.id, productId: shoppingListItems.productId,
     customName: shoppingListItems.customName, quantity: shoppingListItems.quantity,
@@ -36,23 +39,31 @@ export const listarItensLista = createServerFn({ method: 'GET' }).handler(async 
     .leftJoin(categories, eq(products.categoryId, categories.id))
     .orderBy(asc(shoppingListItems.sortOrder), asc(shoppingListItems.createdAt))
 
+  // Passo 4: melhor preço + supermercado para cada produto
   const productIds = [...new Set(items.map(i => i.productId).filter(Boolean))] as string[]
-  const priceMap = new Map<string, number>()
+  const infoMap = new Map<string, { price: number; supermarket: string }>()
 
   if (productIds.length > 0) {
-    const prices = await db.select({
+    const precos = await db.select({
       productId: priceEntries.productId,
-      minPrice: sql<string>`MIN(${priceEntries.price})`,
+      price: priceEntries.price,
+      supermarketName: supermarkets.name,
     })
       .from(priceEntries)
+      .innerJoin(supermarkets, eq(priceEntries.supermarketId, supermarkets.id))
       .where(sql`${priceEntries.productId} = ANY(ARRAY[${sql.join(productIds.map(id => sql`${id}`), sql`, `)}]::text[])`)
-      .groupBy(priceEntries.productId)
-    for (const p of prices) priceMap.set(p.productId, Number(p.minPrice))
+      .orderBy(priceEntries.price)
+
+    for (const p of precos) {
+      if (!infoMap.has(p.productId))
+        infoMap.set(p.productId, { price: Number(p.price), supermarket: p.supermarketName })
+    }
   }
 
   return items.map(item => ({
     ...item,
-    bestPrice: item.productId ? (priceMap.get(item.productId) ?? null) : null,
+    bestPrice: item.productId ? (infoMap.get(item.productId)?.price ?? null) : null,
+    bestSupermarket: item.productId ? (infoMap.get(item.productId)?.supermarket ?? null) : null,
   }))
 })
 
