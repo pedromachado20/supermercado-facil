@@ -65,7 +65,9 @@ export const buscarProdutosComPrecos = createServerFn({ method: 'POST' })
       .where(sql`${priceEntries.productId} = ANY(ARRAY[${sql.join(prodIds.map(id => sql`${id}`), sql`, `)}]::text[])`)
       .orderBy(priceEntries.price)
 
-    return prods.map(p => ({ ...p, prices: prices.filter(pr => pr.productId === p.id) }))
+    return prods
+      .map(p => ({ ...p, prices: prices.filter(pr => pr.productId === p.id) }))
+      .filter(p => p.prices.length > 0)
   })
 
 export const criarProduto = createServerFn({ method: 'POST' })
