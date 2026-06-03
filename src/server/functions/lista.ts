@@ -4,6 +4,13 @@ import { shoppingListItems, products, priceEntries, supermarkets, categories } f
 import { eq, asc, isNull, isNotNull, or, sql } from 'drizzle-orm'
 
 export const listarItensLista = createServerFn({ method: 'GET' }).handler(async () => {
+  // Remove itens cujo produto foi excluído
+  await db.execute(sql`
+    DELETE FROM shopping_list_items
+    WHERE product_id IS NOT NULL
+    AND product_id NOT IN (SELECT id FROM products)
+  `)
+
   const items = await db.select({
     id: shoppingListItems.id, productId: shoppingListItems.productId,
     customName: shoppingListItems.customName, quantity: shoppingListItems.quantity,

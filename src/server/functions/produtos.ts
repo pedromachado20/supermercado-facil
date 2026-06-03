@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/db'
-import { products, priceEntries, categories, supermarkets } from '#/db/schema'
+import { products, priceEntries, categories, supermarkets, shoppingListItems } from '#/db/schema'
 import { eq, ilike, or, and, sql } from 'drizzle-orm'
 
 const EMBALAGEM_RE = /\b(LATÃO|LATAO|LATA[OÃ]?|GARRAFÃO|GARRAF[AÃ]O|GARRAFINHA|GARRAFA|PET|VIDRO|TETRA\s*PA[KC]K?|LONGA\s*VIDA)\b/g
@@ -102,6 +102,7 @@ export const atualizarProduto = createServerFn({ method: 'POST' })
 export const excluirProduto = createServerFn({ method: 'POST' })
   .inputValidator((d: { id: string }) => d)
   .handler(async ({ data }) => {
+    await db.delete(shoppingListItems).where(eq(shoppingListItems.productId, data.id))
     await db.delete(products).where(eq(products.id, data.id))
     return { ok: true }
   })
@@ -110,6 +111,9 @@ export const excluirProdutosEmLote = createServerFn({ method: 'POST' })
   .inputValidator((d: { ids: string[] }) => d)
   .handler(async ({ data }) => {
     if (!data.ids.length) return { ok: true, deleted: 0 }
+    await db.delete(shoppingListItems).where(
+      sql`${shoppingListItems.productId} = ANY(ARRAY[${sql.join(data.ids.map(id => sql`${id}`), sql`, `)}]::text[])`
+    )
     await db.delete(products).where(
       sql`${products.id} = ANY(ARRAY[${sql.join(data.ids.map(id => sql`${id}`), sql`, `)}]::text[])`
     )
