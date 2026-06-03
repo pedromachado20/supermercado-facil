@@ -4,12 +4,19 @@ import { shoppingListItems, products, priceEntries, supermarkets, categories } f
 import { eq, asc, isNull, isNotNull, or, sql } from 'drizzle-orm'
 
 export const listarItensLista = createServerFn({ method: 'GET' }).handler(async () => {
-  // Remove itens cujo produto foi excluído
-  await db.execute(sql`
-    DELETE FROM shopping_list_items
-    WHERE product_id IS NOT NULL
-    AND product_id NOT IN (SELECT id FROM products)
-  `)
+  // Encontra e deleta itens que referenciam produtos inexistentes
+  const orfaos = await db
+    .select({ id: shoppingListItems.id })
+    .from(shoppingListItems)
+    .leftJoin(products, eq(shoppingListItems.productId, products.id))
+    .where(sql`${shoppingListItems.productId} IS NOT NULL AND ${products.id} IS NULL`)
+
+  if (orfaos.length > 0) {
+    const ids = orfaos.map(i => i.id)
+    await db.delete(shoppingListItems).where(
+      sql`id = ANY(ARRAY[${sql.join(ids.map(id => sql`${id}`), sql`, `)}]::text[])`
+    )
+  }
 
   const items = await db.select({
     id: shoppingListItems.id, productId: shoppingListItems.productId,
@@ -22,7 +29,6 @@ export const listarItensLista = createServerFn({ method: 'GET' }).handler(async 
     .from(shoppingListItems)
     .leftJoin(products, eq(shoppingListItems.productId, products.id))
     .leftJoin(categories, eq(products.categoryId, categories.id))
-    .where(or(isNull(shoppingListItems.productId), isNotNull(products.id)))
     .orderBy(asc(shoppingListItems.sortOrder), asc(shoppingListItems.createdAt))
 
   const productIds = [...new Set(items.map(i => i.productId).filter(Boolean))] as string[]
