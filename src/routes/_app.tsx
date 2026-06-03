@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, redirect, useRouterState } from '@tanstack/react-router'
 import { useSession, signOut } from '#/lib/auth-client'
 import {
-  ShoppingCart, Store, Package, Tag, UploadCloud,
+  Store, Package, Tag, UploadCloud,
   LayoutDashboard, BarChart2, LogOut, ChefHat,
   Menu, X, ShoppingBag
 } from 'lucide-react'
@@ -15,14 +15,13 @@ export const Route = createFileRoute('/_app')({
 })
 
 const NAV = [
-  { to: '/',           label: 'Dashboard',       icon: LayoutDashboard },
-  { to: '/mercados',   label: 'Mercados',         icon: Store },
-  { to: '/produtos',   label: 'Produtos',         icon: Package },
-  { to: '/categorias', label: 'Categorias',       icon: Tag },
-  { to: '/importar',   label: 'Importar Dados',   icon: UploadCloud },
-  { to: '/lista',      label: 'Lista de Compras', icon: ShoppingCart },
-  { to: '/receitas',   label: 'Receitas',         icon: ChefHat },
-  { to: '/relatorios', label: 'Relatórios',       icon: BarChart2 },
+  { to: '/',           label: 'Dashboard',     icon: LayoutDashboard },
+  { to: '/mercados',   label: 'Supermercados', icon: Store },
+  { to: '/produtos',   label: 'Produtos',      icon: Package },
+  { to: '/categorias', label: 'Categorias',    icon: Tag },
+  { to: '/importar',   label: 'Importar Dados', icon: UploadCloud },
+  { to: '/receitas',   label: 'Receitas',      icon: ChefHat },
+  { to: '/relatorios', label: 'Relatórios',    icon: BarChart2 },
 ]
 
 function Sidebar({ onClose }: { onClose?: () => void }) {

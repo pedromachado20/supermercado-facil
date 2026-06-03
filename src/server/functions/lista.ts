@@ -18,25 +18,31 @@ export const listarItensLista = createServerFn({ method: 'GET' }).handler(async 
     .orderBy(asc(shoppingListItems.sortOrder), asc(shoppingListItems.createdAt))
 })
 
-export const adicionarItemLista = createServerFn({ method: 'POST' }).handler(async ({ data }: { data: { productId?: string; customName?: string; quantity?: number; unit?: string } }) => {
-  const [item] = await db.insert(shoppingListItems).values({
-    productId: data.productId || null,
-    customName: data.customName || null,
-    quantity: data.quantity ?? 1,
-    unit: data.unit || null,
-  }).returning()
-  return item
-})
+export const adicionarItemLista = createServerFn({ method: 'POST' })
+  .inputValidator((d: { productId?: string; customName?: string; quantity?: number; unit?: string }) => d)
+  .handler(async ({ data }) => {
+    const [item] = await db.insert(shoppingListItems).values({
+      productId: data.productId || null,
+      customName: data.customName || null,
+      quantity: data.quantity ?? 1,
+      unit: data.unit || null,
+    }).returning()
+    return item
+  })
 
-export const toggleItemLista = createServerFn({ method: 'POST' }).handler(async ({ data }: { data: { id: string; checked: boolean } }) => {
-  await db.update(shoppingListItems).set({ checked: data.checked }).where(eq(shoppingListItems.id, data.id))
-  return { ok: true }
-})
+export const toggleItemLista = createServerFn({ method: 'POST' })
+  .inputValidator((d: { id: string; checked: boolean }) => d)
+  .handler(async ({ data }) => {
+    await db.update(shoppingListItems).set({ checked: data.checked }).where(eq(shoppingListItems.id, data.id))
+    return { ok: true }
+  })
 
-export const removerItemLista = createServerFn({ method: 'POST' }).handler(async ({ data }: { data: { id: string } }) => {
-  await db.delete(shoppingListItems).where(eq(shoppingListItems.id, data.id))
-  return { ok: true }
-})
+export const removerItemLista = createServerFn({ method: 'POST' })
+  .inputValidator((d: { id: string }) => d)
+  .handler(async ({ data }) => {
+    await db.delete(shoppingListItems).where(eq(shoppingListItems.id, data.id))
+    return { ok: true }
+  })
 
 export const limparListaMarcados = createServerFn({ method: 'POST' }).handler(async () => {
   await db.delete(shoppingListItems).where(eq(shoppingListItems.checked, true))

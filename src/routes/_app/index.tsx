@@ -12,7 +12,7 @@ export const Route = createFileRoute('/_app/')({
 
 function Dashboard() {
   const { data: mercados = [] } = useQuery({ queryKey: ['mercados'], queryFn: () => listarMercados() })
-  const { data: produtos = [] } = useQuery({ queryKey: ['produtos'], queryFn: () => listarProdutos() })
+  const { data: produtos = [] } = useQuery({ queryKey: ['produtos'], queryFn: () => listarProdutos({ data: {} }) })
   const { data: categorias = [] } = useQuery({ queryKey: ['categorias'], queryFn: () => listarCategorias() })
 
   const stats = [
@@ -56,7 +56,7 @@ function Dashboard() {
       </div>
 
       {/* Atalhos rápidos */}
-      <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--color-text-soft)', textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.75rem' }}>
+      <h2 style={{ fontWeight: 700, marginBottom: '1rem', color: 'var(--color-text-soft)', textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.75rem' }}>
         Acesso rápido
       </h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
@@ -68,7 +68,6 @@ function Dashboard() {
             <div className="card" style={{
               cursor: 'pointer', transition: 'all 0.15s', padding: '1.25rem',
               display: 'flex', alignItems: 'center', gap: '1rem',
-              ':hover': { transform: 'translateY(-2px)' }
             }}>
               <div style={{
                 width: '2.75rem', height: '2.75rem', borderRadius: '0.75rem', flexShrink: 0,

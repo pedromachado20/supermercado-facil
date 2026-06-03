@@ -165,7 +165,7 @@ function ReceitasPage() {
   const [editingValue, setEditingValue] = useState('')
 
   // Categorias expandidas
-  const [expanded, setExpanded] = useState<Set<string>>(new Set(CATALOG.map(c => c.category)))
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
   // Seleção para impressão
   const [selecionadas, setSelecionadas] = useState<Set<string>>(new Set())

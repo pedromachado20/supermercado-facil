@@ -107,6 +107,7 @@ export const priceEntries = pgTable('price_entries', {
   supermarketId: text('supermarket_id').notNull().references(() => supermarkets.id, { onDelete: 'cascade' }),
   price: numeric('price', { precision: 10, scale: 2 }).notNull(),
   pricePerUnit: numeric('price_per_unit', { precision: 10, scale: 2 }),
+  isPromo: boolean('is_promo').default(false).notNull(),
   sourceType: sourceTypeEnum('source_type').notNull(),
   sourceUrl: text('source_url'),
   validFrom: timestamp('valid_from'),

@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { listarMercados } from '#/server/functions/mercados'
-import { importarLink, importarImagem, listarJobs } from '#/server/functions/importar'
-import { UploadCloud, Link2, Image, FileText, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
+import { importarLink, importarArquivo, listarJobs, verificarProvedores, excluirJob } from '#/server/functions/importar'
+import { UploadCloud, Link2, Image, FileText, CheckCircle, XCircle, Clock, AlertCircle, Zap, Trash2 } from 'lucide-react'
 import { useState, useRef } from 'react'
 
 export const Route = createFileRoute('/_app/importar')({
@@ -20,14 +20,68 @@ const TIPO_LABEL: Record<Tipo, { label: string; icon: typeof Link2; desc: string
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { class: string; icon: typeof CheckCircle; label: string }> = {
     completed: { class: 'badge-green', icon: CheckCircle, label: 'Concluído' },
-    failed: { class: 'badge-red', icon: XCircle, label: 'Erro' },
-    running: { class: 'badge-blue', icon: Clock, label: 'Processando' },
-    pending: { class: 'badge-gray', icon: Clock, label: 'Aguardando' },
+    failed:    { class: 'badge-red',   icon: XCircle,     label: 'Erro' },
+    running:   { class: 'badge-blue',  icon: Clock,       label: 'Processando' },
+    pending:   { class: 'badge-gray',  icon: Clock,       label: 'Aguardando' },
   }
   const s = map[status] ?? map.pending
   return (
     <span className={`badge ${s.class}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
       <s.icon size={11} /> {s.label}
+    </span>
+  )
+}
+
+function ProvedoresStatus({ provedores }: { provedores: { gemini: boolean; claude: boolean; playwright: boolean } }) {
+  const nenhum = !provedores.gemini && !provedores.claude
+
+  if (nenhum) {
+    return (
+      <div style={{ padding: '1rem 1.25rem', borderRadius: '0.75rem', background: '#fef2f2', border: '1px solid #fecaca', marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+        <AlertCircle size={18} color="#dc2626" style={{ flexShrink: 0, marginTop: '0.1rem' }} />
+        <div>
+          <div style={{ fontWeight: 700, color: '#991b1b', fontSize: '0.9rem', marginBottom: '0.35rem' }}>
+            Nenhuma chave de IA configurada
+          </div>
+          <div style={{ fontSize: '0.8375rem', color: '#b91c1c', lineHeight: '1.6' }}>
+            Configure ao menos uma opção no <code style={{ background: '#fee2e2', padding: '0 4px', borderRadius: 3 }}>.env</code> e reinicie o servidor:
+            <br />
+            <strong>Gratuito:</strong> <code style={{ background: '#fee2e2', padding: '0 4px', borderRadius: 3 }}>GOOGLE_AI_API_KEY</code> — obtenha em{' '}
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" style={{ color: '#dc2626' }}>aistudio.google.com</a>
+            <br />
+            <strong>Pago:</strong> <code style={{ background: '#fee2e2', padding: '0 4px', borderRadius: 3 }}>ANTHROPIC_API_KEY</code>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ padding: '0.875rem 1.125rem', borderRadius: '0.75rem', background: '#f0fdf4', border: '1px solid #86efac', marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#16a34a', fontWeight: 700, fontSize: '0.875rem' }}>
+        <Zap size={15} /> IA pronta
+      </div>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <ProviderChip label="Gemini Flash" active={provedores.gemini} badge="gratuito" />
+        <ProviderChip label="Claude"       active={provedores.claude} badge="pago" />
+        <ProviderChip label="Playwright"   active={provedores.playwright} badge="JS rendering" />
+      </div>
+    </div>
+  )
+}
+
+function ProviderChip({ label, active, badge }: { label: string; active: boolean; badge: string }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+      padding: '0.2rem 0.6rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600,
+      background: active ? '#dcfce7' : '#f3f4f6',
+      color: active ? '#15803d' : '#9ca3af',
+      border: `1px solid ${active ? '#86efac' : '#e5e7eb'}`,
+    }}>
+      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: active ? '#16a34a' : '#d1d5db', flexShrink: 0 }} />
+      {label}
+      <span style={{ opacity: 0.7, fontWeight: 400 }}>· {badge}</span>
     </span>
   )
 }
@@ -38,17 +92,25 @@ function ImportarPage() {
   const [mercadoId, setMercadoId] = useState('')
   const [url, setUrl] = useState('')
   const [arquivo, setArquivo] = useState<File | null>(null)
+  const [isPromo, setIsPromo] = useState(false)
   const [resultado, setResultado] = useState<{ found: number; imported: number } | null>(null)
   const [erro, setErro] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
   const { data: mercados = [] } = useQuery({ queryKey: ['mercados'], queryFn: () => listarMercados() })
   const { data: jobs = [] } = useQuery({ queryKey: ['jobs'], queryFn: () => listarJobs(), refetchInterval: 3000 })
+  const { data: provedores } = useQuery({ queryKey: ['provedores'], queryFn: () => verificarProvedores(), staleTime: 30000 })
+
+  const deletarJob = useMutation({
+    mutationFn: (id: string) => excluirJob({ data: { id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['jobs'] }),
+  })
 
   const mercadoSelecionado = mercados.find(m => m.id === mercadoId)
+  const iaDisponivel = provedores ? (provedores.gemini || provedores.claude) : false
 
   const importLink = useMutation({
-    mutationFn: () => importarLink({ data: { supermarketId: mercadoId, supermarketName: mercadoSelecionado!.name, url } }),
+    mutationFn: () => importarLink({ data: { supermarketId: mercadoId, supermarketName: mercadoSelecionado!.name, url, isPromo } }),
     onSuccess: (res) => { setResultado({ found: res.found, imported: res.imported }); qc.invalidateQueries({ queryKey: ['jobs', 'produtos'] }) },
     onError: (e: any) => setErro(e.message || 'Erro ao importar'),
   })
@@ -58,14 +120,11 @@ function ImportarPage() {
       if (!arquivo) return
       const reader = new FileReader()
       const base64 = await new Promise<string>((res, rej) => {
-        reader.onload = e => {
-          const result = e.target?.result as string
-          res(result.split(',')[1])
-        }
+        reader.onload = e => { res((e.target?.result as string).split(',')[1]) }
         reader.onerror = rej
         reader.readAsDataURL(arquivo)
       })
-      return importarImagem({ data: { supermarketId: mercadoId, supermarketName: mercadoSelecionado!.name, base64, mimeType: arquivo.type } })
+      return importarArquivo({ data: { supermarketId: mercadoId, supermarketName: mercadoSelecionado!.name, base64, mimeType: arquivo.type, isPromo } })
     },
     onSuccess: (res) => {
       if (res) setResultado({ found: res.found, imported: res.imported })
@@ -86,6 +145,7 @@ function ImportarPage() {
       importLink.mutate()
     } else {
       if (!arquivo) { setErro('Selecione um arquivo.'); return }
+      if (arquivo.size > 20 * 1024 * 1024) { setErro('Arquivo muito grande. Máximo 20 MB.'); return }
       importImg.mutate()
     }
   }
@@ -106,19 +166,8 @@ function ImportarPage() {
         </div>
       </div>
 
-      {/* Aviso: chave IA pendente */}
-      <div style={{ padding: '1rem 1.25rem', borderRadius: '0.75rem', background: '#fffbeb', border: '1px solid #fde68a', marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-        <AlertCircle size={18} color="#d97706" style={{ flexShrink: 0, marginTop: '0.1rem' }} />
-        <div>
-          <div style={{ fontWeight: 700, color: '#92400e', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
-            Importação por IA temporariamente indisponível
-          </div>
-          <div style={{ fontSize: '0.8375rem', color: '#b45309', lineHeight: '1.5' }}>
-            A chave <code style={{ background: '#fef3c7', padding: '0 4px', borderRadius: 3 }}>ANTHROPIC_API_KEY</code> ainda não foi configurada no <code style={{ background: '#fef3c7', padding: '0 4px', borderRadius: 3 }}>.env</code>.
-            Assim que você fornecer a chave, basta adicioná-la e reiniciar o servidor — tudo funcionará normalmente.
-          </div>
-        </div>
-      </div>
+      {/* Status dos provedores */}
+      {provedores && <ProvedoresStatus provedores={provedores} />}
 
       {/* Formulário de importação */}
       <div className="card" style={{ marginBottom: '1.5rem' }}>
@@ -148,13 +197,10 @@ function ImportarPage() {
                   key={key} type="button"
                   onClick={() => { setTipo(key); setArquivo(null); setUrl('') }}
                   style={{
-                    padding: '0.875rem',
-                    borderRadius: '0.625rem',
+                    padding: '0.875rem', borderRadius: '0.625rem', cursor: 'pointer',
+                    textAlign: 'center', transition: 'all 0.15s',
                     border: `2px solid ${tipo === key ? 'var(--color-primary)' : 'var(--color-border)'}`,
                     background: tipo === key ? 'var(--color-primary-bg)' : '#fff',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    transition: 'all 0.15s',
                   }}
                 >
                   <val.icon size={20} color={tipo === key ? 'var(--color-primary)' : 'var(--color-text-soft)'} style={{ margin: '0 auto 0.375rem' }} />
@@ -165,7 +211,7 @@ function ImportarPage() {
             </div>
           </div>
 
-          {/* Input de acordo com o tipo */}
+          {/* Input por tipo */}
           {tipo === 'link' && (
             <div className="form-group">
               <label className="label">URL da página de produtos</label>
@@ -175,7 +221,9 @@ function ImportarPage() {
                 value={url} onChange={e => setUrl(e.target.value)}
               />
               <p style={{ fontSize: '0.8rem', color: 'var(--color-text-soft)', marginTop: '0.375rem' }}>
-                Dica: use links de categorias específicas para resultados mais precisos
+                {provedores?.playwright
+                  ? '✓ Playwright ativo — renderiza JavaScript para capturar produtos carregados dinamicamente'
+                  : 'Dica: use links de categorias específicas para resultados mais precisos'}
               </p>
             </div>
           )}
@@ -198,16 +246,17 @@ function ImportarPage() {
                   <div>
                     <CheckCircle size={28} color="var(--color-primary)" style={{ margin: '0 auto 0.5rem' }} />
                     <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{arquivo.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--color-text-soft)' }}>{(arquivo.size / 1024 / 1024).toFixed(2)} MB</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--color-text-soft)' }}>
+                      {(arquivo.size / 1024 / 1024).toFixed(2)} MB
+                      {arquivo.size > 15 * 1024 * 1024 && <span style={{ color: '#d97706', marginLeft: '0.5rem' }}>⚠ arquivo grande, pode demorar</span>}
+                    </div>
                   </div>
                 ) : (
                   <div>
                     <UploadCloud size={28} color="var(--color-text-soft)" style={{ margin: '0 auto 0.75rem' }} />
-                    <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                      Arraste ou clique para selecionar
-                    </div>
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem' }}>Arraste ou clique para selecionar</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--color-text-soft)' }}>
-                      {tipo === 'foto' ? 'JPG, PNG ou WebP' : 'PDF ou imagem'}
+                      {tipo === 'foto' ? 'JPG, PNG ou WebP · máx. 20 MB' : 'PDF ou imagem · máx. 20 MB'}
                     </div>
                   </div>
                 )}
@@ -215,7 +264,33 @@ function ImportarPage() {
             </div>
           )}
 
-          {/* Resultado / Erro */}
+          {/* Toggle promoção */}
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer',
+            padding: '0.875rem 1rem', borderRadius: '0.625rem',
+            border: `2px solid ${isPromo ? '#f97316' : 'var(--color-border)'}`,
+            background: isPromo ? '#fff7ed' : 'var(--color-surface)',
+            transition: 'all 0.15s',
+          }}>
+            <input
+              type="checkbox"
+              checked={isPromo}
+              onChange={e => setIsPromo(e.target.checked)}
+              style={{ width: '1.1rem', height: '1.1rem', accentColor: '#f97316', cursor: 'pointer' }}
+            />
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.875rem', color: isPromo ? '#c2410c' : 'var(--color-text)' }}>
+                🏷️ Este encarte contém preços promocionais
+              </div>
+              <div style={{ fontSize: '0.8rem', color: isPromo ? '#ea580c' : 'var(--color-text-soft)', marginTop: '0.125rem' }}>
+                {isPromo
+                  ? 'Os preços serão marcados como PROMOÇÃO e exibidos junto ao preço normal'
+                  : 'Marque se os preços são de uma promoção ou encarte especial'}
+              </div>
+            </div>
+          </label>
+
+          {/* Resultado */}
           {resultado && (
             <div style={{ padding: '1rem', borderRadius: '0.625rem', background: '#f0fdf4', border: '1px solid #86efac' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, color: '#16a34a', marginBottom: '0.25rem' }}>
@@ -234,11 +309,12 @@ function ImportarPage() {
             </div>
           )}
 
-          <button type="submit" className="btn btn-primary" style={{ justifyContent: 'center' }} disabled={loading || mercados.length === 0}>
+          <button type="submit" className="btn btn-primary" style={{ justifyContent: 'center' }}
+            disabled={loading || mercados.length === 0 || !iaDisponivel}>
             {loading ? (
               <>
                 <span className="spinner" style={{ width: '1rem', height: '1rem', borderWidth: '2px' }} />
-                A IA está extraindo os produtos...
+                {provedores?.gemini ? 'Gemini está extraindo os produtos...' : 'Claude está extraindo os produtos...'}
               </>
             ) : (
               <><UploadCloud size={16} /> Importar agora</>
@@ -247,7 +323,7 @@ function ImportarPage() {
         </form>
       </div>
 
-      {/* Histórico de importações */}
+      {/* Histórico */}
       {jobs.length > 0 && (
         <div>
           <h3 style={{ fontWeight: 700, fontSize: '0.9375rem', marginBottom: '1rem' }}>Histórico de importações</h3>
@@ -260,14 +336,13 @@ function ImportarPage() {
                   <th>Produtos</th>
                   <th>Status</th>
                   <th>Data</th>
+                  <th style={{ width: '48px' }}></th>
                 </tr>
               </thead>
               <tbody>
                 {jobs.map(j => (
                   <tr key={j.id}>
-                    <td>
-                      <span className="badge badge-gray" style={{ textTransform: 'uppercase' }}>{j.sourceType}</span>
-                    </td>
+                    <td><span className="badge badge-gray" style={{ textTransform: 'uppercase' }}>{j.sourceType}</span></td>
                     <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.8125rem' }}>
                       {j.sourceUrl ?? '(arquivo)'}
                     </td>
@@ -277,6 +352,17 @@ function ImportarPage() {
                     <td><StatusBadge status={j.status} /></td>
                     <td style={{ fontSize: '0.8125rem', color: 'var(--color-text-soft)' }}>
                       {new Date(j.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: 'var(--color-danger)' }}
+                        disabled={deletarJob.isPending}
+                        onClick={() => deletarJob.mutate(j.id)}
+                        title="Excluir"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </td>
                   </tr>
                 ))}
