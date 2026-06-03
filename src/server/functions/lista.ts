@@ -4,15 +4,20 @@ import { shoppingListItems, products, priceEntries, supermarkets, categories } f
 import { eq, asc, isNull, isNotNull, or, sql } from 'drizzle-orm'
 
 export const listarItensLista = createServerFn({ method: 'GET' }).handler(async () => {
-  // Encontra e deleta itens que referenciam produtos inexistentes
-  const orfaos = await db
+  // Remove itens cujo produto foi excluído OU não tem nenhum preço cadastrado
+  const invalidos = await db
     .select({ id: shoppingListItems.id })
     .from(shoppingListItems)
-    .leftJoin(products, eq(shoppingListItems.productId, products.id))
-    .where(sql`${shoppingListItems.productId} IS NOT NULL AND ${products.id} IS NULL`)
+    .where(
+      sql`${shoppingListItems.productId} IS NOT NULL
+        AND NOT EXISTS (
+          SELECT 1 FROM price_entries
+          WHERE product_id = ${shoppingListItems.productId}
+        )`
+    )
 
-  if (orfaos.length > 0) {
-    const ids = orfaos.map(i => i.id)
+  if (invalidos.length > 0) {
+    const ids = invalidos.map(i => i.id)
     await db.delete(shoppingListItems).where(
       sql`id = ANY(ARRAY[${sql.join(ids.map(id => sql`${id}`), sql`, `)}]::text[])`
     )
