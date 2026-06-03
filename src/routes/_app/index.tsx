@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { listarMercados } from '#/server/functions/mercados'
-import { listarProdutos } from '#/server/functions/produtos'
+import { listarProdutosComPrecos } from '#/server/functions/produtos'
 import { listarCategorias } from '#/server/functions/categorias'
 import { Store, Package, Tag, TrendingDown, UploadCloud, ShoppingCart, ArrowRight } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
@@ -12,12 +12,14 @@ export const Route = createFileRoute('/_app/')({
 
 function Dashboard() {
   const { data: mercados = [] } = useQuery({ queryKey: ['mercados'], queryFn: () => listarMercados(), staleTime: 0 })
-  const { data: produtos = [] } = useQuery({ queryKey: ['produtos'], queryFn: () => listarProdutos({ data: {} }), staleTime: 0 })
+  const { data: prodRows = [] } = useQuery({ queryKey: ['produtos-precos', '', '', ''], queryFn: () => listarProdutosComPrecos({ data: {} }), staleTime: 0 })
   const { data: categorias = [] } = useQuery({ queryKey: ['categorias'], queryFn: () => listarCategorias(), staleTime: 0 })
+
+  const produtosCount = new Set(prodRows.map(r => r.productId)).size
 
   const stats = [
     { label: 'Supermercados', value: mercados.length, icon: Store, color: '#16a34a', bg: '#f0fdf4' },
-    { label: 'Produtos', value: produtos.length, icon: Package, color: '#2563eb', bg: '#eff6ff' },
+    { label: 'Produtos', value: produtosCount, icon: Package, color: '#2563eb', bg: '#eff6ff' },
     { label: 'Categorias', value: categorias.length, icon: Tag, color: '#9333ea', bg: '#faf5ff' },
     { label: 'Economia potencial', value: 'Ver lista', icon: TrendingDown, color: '#f59e0b', bg: '#fffbeb' },
   ]
