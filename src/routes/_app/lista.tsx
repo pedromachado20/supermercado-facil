@@ -20,7 +20,7 @@ function ListaPage() {
   const [produtoId, setProdutoId] = useState('')
   const [tab, setTab] = useState<'lista' | 'economia'>('lista')
 
-  const { data: itens = [], isLoading } = useQuery({ queryKey: ['lista'], queryFn: () => listarItensLista() })
+  const { data: itens = [], isLoading } = useQuery({ queryKey: ['lista'], queryFn: () => listarItensLista(), staleTime: 0 })
   const { data: produtos = [] } = useQuery({
     queryKey: ['produtos-busca', busca],
     queryFn: () => buscarProdutosComPrecos({ data: { busca } }),
@@ -56,6 +56,8 @@ function ListaPage() {
   const pendentes = itens.filter(i => !i.checked)
   const marcados  = itens.filter(i => i.checked)
   const totalEconomia = economia.reduce((sum, e) => sum + (e.totalItem ?? 0), 0)
+  const totalLista = pendentes.reduce((sum, i) => i.bestPrice != null ? sum + i.bestPrice * (i.quantity ?? 1) : sum, 0)
+  const temPrecos = pendentes.some(i => i.bestPrice != null)
 
   function imprimir() {
     const win = window.open('', '_blank')
@@ -135,12 +137,27 @@ function ListaPage() {
                         </div>
                       )}
                     </div>
+                    {item.bestPrice != null && (
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-primary)', flexShrink: 0, marginRight: '0.25rem' }}>
+                        {item.quantity && item.quantity > 1
+                          ? `${fmt(item.bestPrice * item.quantity)} (${fmt(item.bestPrice)} un)`
+                          : fmt(item.bestPrice)}
+                      </span>
+                    )}
                     <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)' }}
                       onClick={e => { e.stopPropagation(); remover.mutate(item.id) }}>
                       <Trash2 size={14} />
                     </button>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Total estimado */}
+            {temPrecos && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.875rem 1rem', background: 'var(--color-primary-bg)', border: '1px solid #86efac', borderRadius: '0.75rem', marginBottom: '1.5rem' }}>
+                <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-primary)' }}>Total estimado (menor preço)</span>
+                <span style={{ fontWeight: 800, fontSize: '1.125rem' }}>{fmt(totalLista)}</span>
               </div>
             )}
 

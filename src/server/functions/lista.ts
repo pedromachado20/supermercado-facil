@@ -1,10 +1,10 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/db'
 import { shoppingListItems, products, priceEntries, supermarkets, categories } from '#/db/schema'
-import { eq, asc, isNull, isNotNull, or } from 'drizzle-orm'
+import { eq, asc, isNull, isNotNull, or, sql } from 'drizzle-orm'
 
 export const listarItensLista = createServerFn({ method: 'GET' }).handler(async () => {
-  return db.select({
+  const items = await db.select({
     id: shoppingListItems.id, productId: shoppingListItems.productId,
     customName: shoppingListItems.customName, quantity: shoppingListItems.quantity,
     unit: shoppingListItems.unit, checked: shoppingListItems.checked,
@@ -17,6 +17,25 @@ export const listarItensLista = createServerFn({ method: 'GET' }).handler(async 
     .leftJoin(categories, eq(products.categoryId, categories.id))
     .where(or(isNull(shoppingListItems.productId), isNotNull(products.id)))
     .orderBy(asc(shoppingListItems.sortOrder), asc(shoppingListItems.createdAt))
+
+  const productIds = [...new Set(items.map(i => i.productId).filter(Boolean))] as string[]
+  const priceMap = new Map<string, number>()
+
+  if (productIds.length > 0) {
+    const prices = await db.select({
+      productId: priceEntries.productId,
+      minPrice: sql<string>`MIN(${priceEntries.price})`,
+    })
+      .from(priceEntries)
+      .where(sql`${priceEntries.productId} = ANY(ARRAY[${sql.join(productIds.map(id => sql`${id}`), sql`, `)}]::text[])`)
+      .groupBy(priceEntries.productId)
+    for (const p of prices) priceMap.set(p.productId, Number(p.minPrice))
+  }
+
+  return items.map(item => ({
+    ...item,
+    bestPrice: item.productId ? (priceMap.get(item.productId) ?? null) : null,
+  }))
 })
 
 export const adicionarItemLista = createServerFn({ method: 'POST' })

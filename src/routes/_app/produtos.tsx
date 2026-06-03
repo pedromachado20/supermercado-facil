@@ -67,16 +67,17 @@ function ProdutosPage() {
   })
   const excluir = useMutation({
     mutationFn: (id: string) => excluirProduto({ data: { id } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['produtos-precos'] }); if (confirmDel) { const b = bestPrice(confirmDel); if (b) setSelecionados(s => { const n = new Set(s); n.delete(b.entryId); return n }) } setConfirmDel(null) },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['produtos-precos'] }); qc.invalidateQueries({ queryKey: ['produtos'] }); if (confirmDel) { const b = bestPrice(confirmDel); if (b) setSelecionados(s => { const n = new Set(s); n.delete(b.entryId); return n }) } setConfirmDel(null) },
   })
   const excluirLote = useMutation({
     mutationFn: (ids: string[]) => excluirProdutosEmLote({ data: { ids } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['produtos-precos'] }); setSelecionados(new Set()) },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['produtos-precos'] }); qc.invalidateQueries({ queryKey: ['produtos'] }); setSelecionados(new Set()) },
   })
   const mesclar = useMutation({
     mutationFn: () => mesclarDuplicatas(),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['produtos-precos'] })
+      qc.invalidateQueries({ queryKey: ['produtos'] })
       alert(res.merged > 0 ? `${res.merged} produto${res.merged !== 1 ? 's' : ''} duplicado${res.merged !== 1 ? 's' : ''} mesclado${res.merged !== 1 ? 's' : ''} com sucesso!` : 'Nenhum duplicado encontrado.')
     },
   })
