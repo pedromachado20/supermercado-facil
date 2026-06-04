@@ -64,9 +64,9 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
         })}
       </nav>
 
-      {/* User */}
-      {session && (
-        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginTop: '1rem' }}>
+      {/* User + Sair */}
+      <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginTop: '1rem' }}>
+        {session && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0 0.5rem 0.75rem' }}>
             <div style={{
               width: '2rem', height: '2rem', borderRadius: '50%',
@@ -85,16 +85,16 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
               </div>
             </div>
           </div>
-          <button
-            className="sidebar-link"
-            style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}
-            onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login' } } })}
-          >
-            <LogOut size={16} />
-            Sair
-          </button>
-        </div>
-      )}
+        )}
+        <button
+          className="sidebar-link"
+          style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}
+          onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login' } } })}
+        >
+          <LogOut size={16} />
+          Sair
+        </button>
+      </div>
     </div>
   )
 }
