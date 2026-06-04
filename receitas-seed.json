@@ -1,0 +1,1260 @@
+[
+  {
+    "name": "Pizza na Airfryer",
+    "category": "Airfryer",
+    "description": "Pizza rápida feita na airfryer, com borda dourada e queijo derretido.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 15,
+    "servings": 1,
+    "instructions": "Passo 1 — Pré-aquecer: Ligue a airfryer a 180°C por 5 minutos.\n\nPasso 2 — Pré-assar a Massa: Coloque só a massa por 3 a 5 minutos para evitar massa crua no meio.\n\nPasso 3 — Colocar Recheio: Passe o molho de tomate, depois queijo, presunto, tomate e orégano.\n\nPasso 4 — Assar: Asse a 180°C por 5 a 10 minutos até o queijo derreter e a borda ficar dourada e crocante.",
+    "ingredients": [
+      { "name": "massa de pizza pequena", "quantity": "1", "unit": "unidade" },
+      { "name": "molho de tomate", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "queijo", "quantity": "a gosto", "unit": "" },
+      { "name": "presunto", "quantity": "a gosto", "unit": "" },
+      { "name": "orégano", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Pão de Queijo na Airfryer",
+    "category": "Airfryer",
+    "description": "Pão de queijo fácil, por fora levemente dourado e por dentro macio puxando queijo.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 18,
+    "servings": 4,
+    "instructions": "Passo 1 — Misturar: Misture polvilho, queijo ralado e ovos. Adicione leite e óleo e misture até virar massa.\n\nPasso 2 — Fazer Bolinhas: Passe óleo na mão e faça bolinhas pequenas.\n\nPasso 3 — Airfryer: Asse a 180°C por 12 a 18 minutos até ficar levemente dourado por fora e macio por dentro.",
+    "ingredients": [
+      { "name": "polvilho doce", "quantity": "2", "unit": "xícaras" },
+      { "name": "queijo ralado", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "leite", "quantity": "1/2", "unit": "xícara" },
+      { "name": "óleo", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Batata Frita na Airfryer",
+    "category": "Airfryer",
+    "description": "Batata frita crocante por fora e macia por dentro, com pouco óleo.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 30,
+    "servings": 2,
+    "instructions": "Passo 1 — Cortar: Descasque (opcional) e corte em tiras.\n\nPasso 2 — Secar: Lave e seque muito bem. Isso ajuda a ficar crocante.\n\nPasso 3 — Temperar: Misture batata, pouco óleo e sal.\n\nPasso 4 — Airfryer: Asse a 200°C por 20 a 30 minutos. IMPORTANTE: na metade do tempo, mexa as batatas para assar por igual.",
+    "ingredients": [
+      { "name": "batata", "quantity": "3", "unit": "unidades médias" },
+      { "name": "óleo", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Frango Crocante na Airfryer",
+    "category": "Airfryer",
+    "description": "Frango empanado crocante por fora e suculento por dentro.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 20,
+    "servings": 2,
+    "instructions": "Passo 1 — Temperar: Tempere o filé de frango com sal e alho.\n\nPasso 2 — Empanar: Passe na farinha de trigo, depois no ovo e por último na farinha de rosca.\n\nPasso 3 — Passar Óleo: Passe um pouco de óleo por cima para ajudar a dourar e ficar crocante.\n\nPasso 4 — Airfryer: Asse a 200°C por 20 minutos. Na metade do tempo, vire os pedaços.",
+    "ingredients": [
+      { "name": "filé de frango", "quantity": "2", "unit": "unidades" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "farinha de trigo", "quantity": "1/2", "unit": "xícara" },
+      { "name": "farinha de rosca", "quantity": "1/2", "unit": "xícara" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Cookies na Airfryer",
+    "category": "Airfryer",
+    "description": "Cookies com borda dourada e centro macio, prontos em poucos minutos.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 12,
+    "servings": 8,
+    "instructions": "Passo 1 — Misturar: Misture manteiga, açúcar e ovo. Adicione farinha e chocolate picado.\n\nPasso 2 — Fazer Bolinhas: Faça pequenas bolinhas. Não coloque muito juntas.\n\nPasso 3 — Airfryer: Asse a 160°C por 8 a 12 minutos até as bordas ficarem douradas e o centro macio.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "1", "unit": "xícara" },
+      { "name": "manteiga", "quantity": "100", "unit": "g" },
+      { "name": "açúcar", "quantity": "1/2", "unit": "xícara" },
+      { "name": "ovo", "quantity": "1", "unit": "unidade" },
+      { "name": "chocolate picado", "quantity": "1/2", "unit": "xícara" }
+    ]
+  },
+  {
+    "name": "Bolo Simples na Airfryer",
+    "category": "Airfryer",
+    "description": "Bolo simples fofinho feito na airfryer. Pronto quando o palito sair limpo.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 35,
+    "servings": 6,
+    "instructions": "Passo 1 — Misturar: Misture ovos, açúcar e manteiga. Adicione leite e farinha. Por último acrescente o fermento.\n\nPasso 2 — Untar Forma: Passe manteiga e farinha na forma.\n\nPasso 3 — Airfryer: Asse a 160°C por 25 a 35 minutos. Para saber se está pronto, espete um garfo ou palito — se sair limpo, está pronto.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "2", "unit": "xícaras" },
+      { "name": "açúcar", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "leite", "quantity": "1", "unit": "xícara" },
+      { "name": "manteiga", "quantity": "100", "unit": "g" },
+      { "name": "fermento", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "name": "Arroz Soltinho",
+    "category": "Almoço/Janta",
+    "description": "Arroz soltinho refogado no alho, macio e sem empapar.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 20,
+    "servings": 4,
+    "instructions": "Passo 1 — Lavar o Arroz (Opcional): Lave o arroz e escorra bem a água.\n\nPasso 2 — Refogar: Na panela, coloque óleo e alho em fogo médio. Mexa até o alho dourar levemente. Não deixe queimar.\n\nPasso 3 — Colocar o Arroz: Adicione o arroz e misture por 1 minuto.\n\nPasso 4 — Colocar Água: Adicione a água e o sal. Misture.\n\nPasso 5 — Cozinhar: Deixe com a panela semi tampada por 15 a 20 minutos até o arroz ficar macio, soltinho e sem água no fundo.",
+    "ingredients": [
+      { "name": "arroz", "quantity": "1", "unit": "xícara" },
+      { "name": "água", "quantity": "2", "unit": "xícaras" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" },
+      { "name": "óleo", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Feijão Simples",
+    "category": "Almoço/Janta",
+    "description": "Feijão cozido na pressão com caldo grosso e bem temperado.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 35,
+    "servings": 6,
+    "instructions": "Passo 1 — Lavar: Lave o feijão e retire pedrinhas e feijões estragados.\n\nPasso 2 — Cozinhar: Na panela de pressão, coloque o feijão e água suficiente para cobrir bem.\n\nPasso 3 — Pressão: Depois que pegar pressão, cozinhe por 25 a 35 minutos. IMPORTANTE: espere a pressão sair sozinha.\n\nPasso 4 — Temperar: Refogue alho no óleo e misture no feijão. Acrescente sal a gosto.",
+    "ingredients": [
+      { "name": "feijão", "quantity": "2", "unit": "xícaras" },
+      { "name": "água", "quantity": "suficiente para cobrir", "unit": "" },
+      { "name": "alho", "quantity": "3", "unit": "dentes" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" },
+      { "name": "óleo", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "name": "Frango Empanado",
+    "category": "Almoço/Janta",
+    "description": "Frango empanado frito, crocante por fora e macio por dentro.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 15,
+    "servings": 2,
+    "instructions": "Passo 1 — Temperar: Tempere o filé de frango com sal e alho.\n\nPasso 2 — Empanar: Passe na farinha de trigo, depois no ovo e por último na farinha de rosca.\n\nPasso 3 — Fritar: Em óleo quente no fogo médio, frite até dourar dos dois lados.",
+    "ingredients": [
+      { "name": "filé de frango", "quantity": "2", "unit": "unidades" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "farinha de trigo", "quantity": "1/2", "unit": "xícara" },
+      { "name": "farinha de rosca", "quantity": "1/2", "unit": "xícara" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Strogonoff",
+    "category": "Almoço/Janta",
+    "description": "Strogonoff cremoso com molho rosado, feito com frango ou carne.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 25,
+    "servings": 4,
+    "instructions": "Passo 1 — Refogar: Refogue a cebola e a carne ou frango até cozinhar bem.\n\nPasso 2 — Fazer o Molho: Adicione ketchup e mostarda. Misture bem.\n\nPasso 3 — Creme de Leite: Desligue o fogo e coloque o creme de leite. Misture devagar até ficar cremoso e rosado.",
+    "ingredients": [
+      { "name": "frango ou carne", "quantity": "500", "unit": "g" },
+      { "name": "creme de leite", "quantity": "1", "unit": "caixinha" },
+      { "name": "ketchup", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "mostarda", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" }
+    ]
+  },
+  {
+    "name": "Macarronada",
+    "category": "Almoço/Janta",
+    "description": "Macarrão com molho de carne moída e tomate, simples e saboroso.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 30,
+    "servings": 4,
+    "instructions": "Passo 1 — Cozinhar Macarrão: Em água fervendo com sal, cozinhe o macarrão conforme o tempo da embalagem.\n\nPasso 2 — Fazer o Molho: Refogue alho, cebola e carne moída. Depois adicione o molho de tomate e cozinhe por alguns minutos.\n\nPasso 3 — Misturar: Misture o molho no macarrão e sirva.",
+    "ingredients": [
+      { "name": "macarrão", "quantity": "500", "unit": "g" },
+      { "name": "molho de tomate", "quantity": "1", "unit": "caixinha" },
+      { "name": "carne moída", "quantity": "300", "unit": "g" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" }
+    ]
+  },
+  {
+    "name": "Purê de Batata",
+    "category": "Almoço/Janta",
+    "description": "Purê de batata liso, cremoso e macio.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 25,
+    "servings": 4,
+    "instructions": "Passo 1 — Cozinhar Batata: Cozinhe as batatas até ficarem bem macias.\n\nPasso 2 — Amassar: Amasse com garfo ou espremedor.\n\nPasso 3 — Misturar: Na panela, misture a batata amassada com manteiga e leite. Mexa até ficar cremoso. Tempere com sal.",
+    "ingredients": [
+      { "name": "batata", "quantity": "4", "unit": "unidades médias" },
+      { "name": "leite", "quantity": "1/2", "unit": "xícara" },
+      { "name": "manteiga", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Carne Assada",
+    "category": "Almoço/Janta",
+    "description": "Carne assada no forno, dourada por fora e macia por dentro.",
+    "prepTimeMinutes": 35,
+    "cookTimeMinutes": 90,
+    "servings": 6,
+    "instructions": "Passo 1 — Temperar: Tempere a carne com alho e sal. Deixe descansar por 30 minutos.\n\nPasso 2 — Assar: Leve ao forno a 200°C por 1 hora a 1 hora e meia. Dica: se secar, coloque um pouco de água.",
+    "ingredients": [
+      { "name": "carne", "quantity": "1", "unit": "kg" },
+      { "name": "alho", "quantity": "4", "unit": "dentes" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "óleo", "quantity": "2", "unit": "colheres de sopa" }
+    ]
+  },
+  {
+    "name": "Batata Gratinada",
+    "category": "Almoço/Janta",
+    "description": "Batata gratinada em camadas com creme de leite, queijo e presunto.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 30,
+    "servings": 4,
+    "instructions": "Passo 1 — Cozinhar Batata: Cozinhe as batatas até ficarem levemente macias. Não deixe desmanchar.\n\nPasso 2 — Montar: Faça camadas de batata, creme de leite, queijo e presunto em um refratário.\n\nPasso 3 — Assar: Leve ao forno a 200°C por 30 minutos até ficar dourado por cima e cremoso por dentro.",
+    "ingredients": [
+      { "name": "batata", "quantity": "4", "unit": "unidades médias" },
+      { "name": "creme de leite", "quantity": "1", "unit": "caixinha" },
+      { "name": "queijo", "quantity": "100", "unit": "g" },
+      { "name": "presunto", "quantity": "100", "unit": "g" }
+    ]
+  },
+  {
+    "name": "Milkshake",
+    "category": "Bebidas",
+    "description": "Milkshake grosso, cremoso e gelado. Pode ser de chocolate, morango ou outro sabor.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 0,
+    "servings": 1,
+    "instructions": "Passo 1 — Colocar no Liquidificador: Coloque 3 bolas de sorvete, 1 copo de leite e chocolate em pó ou calda.\n\nPasso 2 — Bater: Bata por 1 a 2 minutos até ficar grosso e cremoso. Se ficar muito grosso, coloque mais leite.\n\nDica Extra: Pode finalizar com chantilly, granulado ou calda por cima.",
+    "ingredients": [
+      { "name": "sorvete", "quantity": "3", "unit": "bolas" },
+      { "name": "leite", "quantity": "1", "unit": "copo" },
+      { "name": "chocolate em pó ou calda", "quantity": "2", "unit": "colheres de sopa" }
+    ]
+  },
+  {
+    "name": "Chocolate Quente",
+    "category": "Bebidas",
+    "description": "Chocolate quente cremoso, perfeito para dias frios.",
+    "prepTimeMinutes": 2,
+    "cookTimeMinutes": 8,
+    "servings": 2,
+    "instructions": "Passo 1 — Misturar: Na panela coloque leite, chocolate em pó e açúcar. Misture antes de ligar o fogo.\n\nPasso 2 — Cozinhar: Leve ao fogo médio mexendo sem parar até ficar quente e cremoso. Para mais grosso, adicione um pouco de amido de milho.",
+    "ingredients": [
+      { "name": "leite", "quantity": "500", "unit": "ml" },
+      { "name": "chocolate em pó", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "açúcar", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "amido de milho", "quantity": "1", "unit": "colher de sopa (opcional)" }
+    ]
+  },
+  {
+    "name": "Cappuccino Caseiro",
+    "category": "Bebidas",
+    "description": "Cappuccino cremoso feito em casa com café solúvel, leite e canela.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 5,
+    "servings": 1,
+    "instructions": "Passo 1 — Fazer o Café: Esquente água e misture o café solúvel com açúcar.\n\nPasso 2 — Aquecer o Leite: Aqueça o leite sem ferver.\n\nPasso 3 — Misturar Tudo: Misture café, leite, chocolate em pó e canela. Sirva quente.",
+    "ingredients": [
+      { "name": "café solúvel", "quantity": "1", "unit": "colher de chá" },
+      { "name": "leite", "quantity": "200", "unit": "ml" },
+      { "name": "chocolate em pó", "quantity": "1", "unit": "colher de chá" },
+      { "name": "açúcar", "quantity": "1", "unit": "colher de chá" },
+      { "name": "canela", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Vitamina de Banana",
+    "category": "Bebidas",
+    "description": "Vitamina cremosa e nutritiva de banana com leite.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 0,
+    "servings": 2,
+    "instructions": "Passo 1 — Cortar a Banana: Descasque e corte em pedaços.\n\nPasso 2 — Bater: No liquidificador coloque banana, leite e açúcar ou mel. Bata por 1 minuto até ficar cremosa.\n\nDica Extra: Pode acrescentar aveia, chocolate ou canela.",
+    "ingredients": [
+      { "name": "banana", "quantity": "2", "unit": "unidades" },
+      { "name": "leite", "quantity": "300", "unit": "ml" },
+      { "name": "açúcar ou mel", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "name": "Suco Natural",
+    "category": "Bebidas",
+    "description": "Suco natural refrescante feito com frutas frescas.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 0,
+    "servings": 2,
+    "instructions": "Passo 1 — Preparar a Fruta: Lave bem, descasque se precisar e retire sementes e partes estragadas.\n\nPasso 2 — Bater: No liquidificador coloque fruta, água, açúcar e gelo. Bata por 1 minuto.\n\nPasso 3 — Coar (Opcional): Se quiser mais leve e sem pedaços, coe com peneira.",
+    "ingredients": [
+      { "name": "frutas", "quantity": "2", "unit": "xícaras" },
+      { "name": "água", "quantity": "300", "unit": "ml" },
+      { "name": "açúcar", "quantity": "a gosto", "unit": "" },
+      { "name": "gelo", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Bolo de Chocolate",
+    "category": "Bolos",
+    "description": "Bolo de chocolate fofinho e úmido, clássico e irresistível.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 45,
+    "servings": 8,
+    "instructions": "Passo 1 — Misturar os Líquidos: Na tigela coloque ovos, manteiga e açúcar. Misture até ficar cremoso.\n\nPasso 2 — Colocar Farinha e Chocolate: Adicione a farinha e o chocolate em pó intercalando com o leite. Misture até a massa ficar lisa.\n\nPasso 3 — Colocar Fermento: Misture o fermento devagar.\n\nPasso 4 — Assar: Leve ao forno a 180°C por 35 a 45 minutos.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "2", "unit": "xícaras" },
+      { "name": "chocolate em pó", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "leite", "quantity": "1", "unit": "xícara" },
+      { "name": "manteiga", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "fermento", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "açúcar", "quantity": "1 1/2", "unit": "xícara" }
+    ]
+  },
+  {
+    "name": "Bolo de Cenoura",
+    "category": "Bolos",
+    "description": "Bolo de cenoura fofinho feito no liquidificador, clássico brasileiro.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 40,
+    "servings": 8,
+    "instructions": "Passo 1 — Bater no Liquidificador: Bata cenoura, ovos e óleo até virar creme.\n\nPasso 2 — Misturar a Farinha: Na tigela, coloque a farinha e o açúcar. Despeje a mistura do liquidificador e misture.\n\nPasso 3 — Colocar Fermento: Misture o fermento devagar.\n\nPasso 4 — Assar: Leve ao forno a 180°C por 40 minutos.",
+    "ingredients": [
+      { "name": "cenoura", "quantity": "3", "unit": "unidades médias" },
+      { "name": "farinha de trigo", "quantity": "2", "unit": "xícaras" },
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "óleo", "quantity": "1/2", "unit": "xícara" },
+      { "name": "açúcar", "quantity": "2", "unit": "xícaras" },
+      { "name": "fermento", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "name": "Bolo de Fubá",
+    "category": "Bolos",
+    "description": "Bolo de fubá simples e gostoso, com sabor de roça.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 45,
+    "servings": 8,
+    "instructions": "Passo 1 — Misturar: Misture ovos, açúcar e óleo. Depois adicione leite, fubá e farinha.\n\nPasso 2 — Colocar Fermento: Misture o fermento devagar.\n\nPasso 3 — Assar: Leve ao forno a 180°C por 35 a 45 minutos.",
+    "ingredients": [
+      { "name": "fubá", "quantity": "1", "unit": "xícara" },
+      { "name": "farinha de trigo", "quantity": "1", "unit": "xícara" },
+      { "name": "leite", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "açúcar", "quantity": "1 1/2", "unit": "xícara" },
+      { "name": "óleo", "quantity": "1/2", "unit": "xícara" },
+      { "name": "fermento", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "name": "Bolo de Milho",
+    "category": "Bolos",
+    "description": "Bolo de milho cremoso e fofinho feito no liquidificador.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 50,
+    "servings": 8,
+    "instructions": "Passo 1 — Bater no Liquidificador: Bata tudo (menos o fermento) até ficar cremoso.\n\nPasso 2 — Colocar Fermento: Misture o fermento com colher devagar.\n\nPasso 3 — Assar: Leve ao forno a 180°C por 40 a 50 minutos.",
+    "ingredients": [
+      { "name": "milho", "quantity": "1", "unit": "lata" },
+      { "name": "leite", "quantity": "1", "unit": "xícara" },
+      { "name": "açúcar", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "óleo", "quantity": "1/2", "unit": "xícara" },
+      { "name": "fubá", "quantity": "1/2", "unit": "xícara" },
+      { "name": "fermento", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "name": "Bolo Simples Fofinho",
+    "category": "Bolos",
+    "description": "Bolo simples, fofo e versátil. Massa cremosa e lisa que cresce bem.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 45,
+    "servings": 8,
+    "instructions": "Passo 1 — Misturar: Misture ovos, açúcar e manteiga. Depois adicione leite e farinha até a massa ficar cremosa, lisa e escorrendo devagar.\n\nPasso 2 — Fermento: Misture o fermento devagar.\n\nPasso 3 — Assar: Leve ao forno a 180°C por 35 a 45 minutos.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "2", "unit": "xícaras" },
+      { "name": "açúcar", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "leite", "quantity": "1", "unit": "xícara" },
+      { "name": "manteiga", "quantity": "100", "unit": "g" },
+      { "name": "fermento", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "name": "Bolo de Laranja",
+    "category": "Bolos",
+    "description": "Bolo de laranja fofinho com aroma cítrico, feito no liquidificador.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 45,
+    "servings": 8,
+    "instructions": "Passo 1 — Bater: No liquidificador bata laranja (com casca ou suco), ovos e óleo.\n\nPasso 2 — Misturar: Misture com farinha e açúcar até a massa ficar lisa.\n\nPasso 3 — Fermento: Misture o fermento devagar.\n\nPasso 4 — Assar: Leve ao forno a 180°C por 35 a 45 minutos.",
+    "ingredients": [
+      { "name": "laranja", "quantity": "1", "unit": "unidade (suco)" },
+      { "name": "farinha de trigo", "quantity": "2", "unit": "xícaras" },
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "açúcar", "quantity": "2", "unit": "xícaras" },
+      { "name": "óleo", "quantity": "1/2", "unit": "xícara" },
+      { "name": "fermento", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "name": "Cupcake",
+    "category": "Bolos",
+    "description": "Cupcake fofo com cobertura de chocolate, perfeito para festas.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 30,
+    "servings": 12,
+    "instructions": "Passo 1 — Fazer a Massa: Misture ovos, açúcar e manteiga. Depois adicione leite e farinha.\n\nPasso 2 — Colocar nas Forminhas: Preencha as forminhas até metade ou 3/4 — não encha até o topo pois a massa cresce.\n\nPasso 3 — Assar: Leve ao forno a 180°C por 20 a 30 minutos.\n\nCobertura Simples: Misture leite condensado e chocolate em pó. Mexa na panela até engrossar e use sobre os cupcakes frios.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "2", "unit": "xícaras" },
+      { "name": "leite", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "açúcar", "quantity": "1", "unit": "xícara" },
+      { "name": "manteiga", "quantity": "100", "unit": "g" },
+      { "name": "fermento", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "leite condensado", "quantity": "1/2", "unit": "lata (cobertura)" },
+      { "name": "chocolate em pó", "quantity": "3", "unit": "colheres de sopa (cobertura)" }
+    ]
+  },
+  {
+    "name": "Brigadeiro",
+    "category": "Doces",
+    "description": "Brigadeiro tradicional brasileiro, cremoso e coberto de granulado.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 15,
+    "servings": 20,
+    "instructions": "Passo 1 — Misturar na Panela: Coloque leite condensado, manteiga e chocolate na panela. Misture antes de ligar o fogo.\n\nPasso 2 — Cozinhar: Fogo baixo ou médio mexendo sem parar por 10 a 15 minutos, até engrossar e desgrudar da panela (quando passar a colher aparece o fundo).\n\nPasso 3 — Enrolar: Espere esfriar. Passe manteiga na mão, faça bolinhas e passe no granulado.",
+    "ingredients": [
+      { "name": "leite condensado", "quantity": "1", "unit": "lata" },
+      { "name": "manteiga", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "chocolate em pó", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "chocolate granulado", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Pudim",
+    "category": "Doces",
+    "description": "Pudim de leite condensado clássico com calda de caramelo.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 80,
+    "servings": 8,
+    "instructions": "Passo 1 — Fazer a Calda: Na forma coloque o açúcar em fogo baixo. Espere derreter sem mexer muito até ficar dourado. Adicione água devagar.\n\nPasso 2 — Fazer o Pudim: No liquidificador bata leite condensado, leite e ovos por 2 minutos.\n\nPasso 3 — Assar em Banho-Maria: Coloque a mistura na forma com calda. Coloque essa forma dentro de outra com água. Asse a 180°C por 1 hora a 1 hora e 20 minutos. Está pronto quando o palito sair quase limpo.",
+    "ingredients": [
+      { "name": "leite condensado", "quantity": "1", "unit": "lata" },
+      { "name": "leite", "quantity": "2", "unit": "xícaras" },
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "açúcar", "quantity": "1", "unit": "xícara (calda)" },
+      { "name": "água", "quantity": "1/2", "unit": "xícara (calda)" }
+    ]
+  },
+  {
+    "name": "Mousse",
+    "category": "Doces",
+    "description": "Mousse cremosa e gelada de limão ou maracujá, fácil e rápida.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 0,
+    "servings": 6,
+    "instructions": "Passo 1 — Misturar: No liquidificador bata leite condensado, creme de leite e suco por 2 minutos.\n\nPasso 2 — Geladeira: Coloque em um pote e leve à geladeira por 3 a 4 horas até ficar firme e cremosa.",
+    "ingredients": [
+      { "name": "leite condensado", "quantity": "1", "unit": "lata" },
+      { "name": "creme de leite", "quantity": "1", "unit": "caixinha" },
+      { "name": "suco de limão ou maracujá", "quantity": "1/2", "unit": "xícara" }
+    ]
+  },
+  {
+    "name": "Brownie",
+    "category": "Doces",
+    "description": "Brownie denso e úmido por dentro, com crosta levemente crocante.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 30,
+    "servings": 12,
+    "instructions": "Passo 1 — Derreter: Derreta o chocolate e a manteiga no micro-ondas ou em banho-maria.\n\nPasso 2 — Misturar: Misture açúcar e ovos. Adicione o chocolate derretido e por último a farinha.\n\nPasso 3 — Assar: Leve ao forno a 180°C por 30 minutos. O meio deve ficar levemente úmido — não asse demais.",
+    "ingredients": [
+      { "name": "chocolate", "quantity": "200", "unit": "g" },
+      { "name": "manteiga", "quantity": "100", "unit": "g" },
+      { "name": "açúcar", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "farinha de trigo", "quantity": "1/2", "unit": "xícara" }
+    ]
+  },
+  {
+    "name": "Cookies",
+    "category": "Doces",
+    "description": "Cookies com borda dourada e centro macio, com pedaços de chocolate.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 20,
+    "servings": 12,
+    "instructions": "Passo 1 — Misturar: Misture manteiga, açúcar e ovo. Adicione farinha e chocolate picado.\n\nPasso 2 — Modelar: Faça bolinhas e coloque na forma deixando espaço entre elas.\n\nPasso 3 — Assar: Asse a 180°C por 15 a 20 minutos até as bordas ficarem douradas e o centro macio.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "2", "unit": "xícaras" },
+      { "name": "manteiga", "quantity": "150", "unit": "g" },
+      { "name": "açúcar", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "chocolate picado", "quantity": "1", "unit": "xícara" }
+    ]
+  },
+  {
+    "name": "Donuts",
+    "category": "Doces",
+    "description": "Donuts fritos dourados com cobertura de chocolate ou açúcar.",
+    "prepTimeMinutes": 70,
+    "cookTimeMinutes": 15,
+    "servings": 10,
+    "instructions": "Passo 1 — Fazer a Massa: Misture todos os ingredientes e sove por 10 minutos.\n\nPasso 2 — Descansar: Deixe a massa descansar por 1 hora.\n\nPasso 3 — Modelar: Abra a massa, corte em círculos e faça o buraco no meio.\n\nPasso 4 — Fritar: Frite em óleo quente em fogo médio até dourar dos dois lados.\n\nPasso 5 — Cobertura: Finalize com chocolate derretido, açúcar ou leite condensado.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "3", "unit": "xícaras" },
+      { "name": "leite", "quantity": "1/2", "unit": "xícara" },
+      { "name": "açúcar", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "manteiga", "quantity": "50", "unit": "g" },
+      { "name": "fermento biológico", "quantity": "10", "unit": "g" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" }
+    ]
+  },
+  {
+    "name": "Beijinho",
+    "category": "Doces",
+    "description": "Beijinho de coco, clássico das festas brasileiras.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 15,
+    "servings": 20,
+    "instructions": "Passo 1 — Cozinhar: Misture leite condensado, manteiga e coco ralado na panela. Mexa sem parar em fogo médio até desgrudar da panela.\n\nPasso 2 — Enrolar: Espere esfriar, faça bolinhas e passe no coco ralado.",
+    "ingredients": [
+      { "name": "leite condensado", "quantity": "1", "unit": "lata" },
+      { "name": "manteiga", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "coco ralado", "quantity": "1", "unit": "xícara" }
+    ]
+  },
+  {
+    "name": "Palha Italiana",
+    "category": "Doces",
+    "description": "Palha italiana com brigadeiro e bolacha, cortada em quadradinhos.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 15,
+    "servings": 20,
+    "instructions": "Passo 1 — Fazer Brigadeiro: Faça o brigadeiro tradicional (leite condensado, manteiga e chocolate) até desgrudar da panela.\n\nPasso 2 — Quebrar Bolacha: Quebre a bolacha maisena em pedaços médios sem esmagar demais.\n\nPasso 3 — Misturar: Misture os pedaços de bolacha no brigadeiro ainda quente.\n\nPasso 4 — Esfriar: Coloque em uma forma, espere esfriar completamente e corte em quadrados.",
+    "ingredients": [
+      { "name": "leite condensado", "quantity": "1", "unit": "lata" },
+      { "name": "manteiga", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "chocolate em pó", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "bolacha maisena", "quantity": "200", "unit": "g" }
+    ]
+  },
+  {
+    "name": "Pizza Caseira",
+    "category": "Massas e Lanches",
+    "description": "Pizza caseira com massa fofinha feita do zero.",
+    "prepTimeMinutes": 70,
+    "cookTimeMinutes": 30,
+    "servings": 4,
+    "instructions": "Passo 1 — Misturar: Misture farinha, fermento, açúcar e sal. Adicione água morna aos poucos e óleo. Misture até virar massa.\n\nPasso 2 — Sovar: Sove por 10 minutos até ficar lisa e macia.\n\nPasso 3 — Descansar: Deixe descansar por 1 hora.\n\nPasso 4 — Rechear: Abra a massa, coloque molho, queijo, tomate e orégano.\n\nPasso 5 — Assar: Asse a 220°C por 20 a 30 minutos.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "2", "unit": "xícaras" },
+      { "name": "fermento biológico", "quantity": "1", "unit": "sachê" },
+      { "name": "água morna", "quantity": "3/4", "unit": "xícara" },
+      { "name": "óleo", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": "1", "unit": "colher de chá" },
+      { "name": "açúcar", "quantity": "1", "unit": "colher de chá" },
+      { "name": "molho de tomate", "quantity": "1/2", "unit": "xícara" },
+      { "name": "queijo", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Esfiha",
+    "category": "Massas e Lanches",
+    "description": "Esfiha de carne moída, aberta ou fechada em forma de triângulo.",
+    "prepTimeMinutes": 70,
+    "cookTimeMinutes": 25,
+    "servings": 12,
+    "instructions": "Passo 1 — Fazer a Massa: Misture farinha, fermento, água morna e óleo. Sove por 10 minutos.\n\nPasso 2 — Descansar: Deixe descansar por 1 hora.\n\nPasso 3 — Modelar: Abra pequenos círculos, coloque o recheio no meio e feche em formato triangular ou deixe aberta.\n\nPasso 4 — Assar: Asse a 200°C por 25 minutos.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "3", "unit": "xícaras" },
+      { "name": "fermento biológico", "quantity": "1", "unit": "sachê" },
+      { "name": "água morna", "quantity": "1", "unit": "xícara" },
+      { "name": "óleo", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "carne moída", "quantity": "300", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "tomate", "quantity": "1", "unit": "unidade" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Hambúrguer Artesanal",
+    "category": "Massas e Lanches",
+    "description": "Hambúrguer artesanal suculento na frigideira.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 10,
+    "servings": 2,
+    "instructions": "Passo 1 — Misturar: Misture a carne moída com sal, alho e pimenta com as mãos.\n\nPasso 2 — Modelar: Forme discos não muito finos.\n\nPasso 3 — Fritar: Na frigideira bem quente, frite 3 a 5 minutos de cada lado.\n\nPasso 4 — Montar: Monte no pão com queijo, alface e tomate.",
+    "ingredients": [
+      { "name": "carne moída", "quantity": "300", "unit": "g" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" },
+      { "name": "alho", "quantity": "1", "unit": "dente" },
+      { "name": "pão de hambúrguer", "quantity": "2", "unit": "unidades" },
+      { "name": "queijo", "quantity": "2", "unit": "fatias" },
+      { "name": "alface", "quantity": "a gosto", "unit": "" },
+      { "name": "tomate", "quantity": "1", "unit": "unidade" }
+    ]
+  },
+  {
+    "name": "Hot Dog Completo",
+    "category": "Massas e Lanches",
+    "description": "Hot dog completo com molho, milho e batata palha.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 10,
+    "servings": 2,
+    "instructions": "Passo 1 — Cozinhar a Salsicha: Ferva água e coloque as salsichas por 5 minutos.\n\nPasso 2 — Fazer o Molho: Misture molho de tomate, cebola e milho.\n\nPasso 3 — Montar: No pão coloque a salsicha, o molho e finalize com batata palha.",
+    "ingredients": [
+      { "name": "pão de hot dog", "quantity": "2", "unit": "unidades" },
+      { "name": "salsicha", "quantity": "2", "unit": "unidades" },
+      { "name": "molho de tomate", "quantity": "4", "unit": "colheres de sopa" },
+      { "name": "milho", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "batata palha", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Pastel",
+    "category": "Massas e Lanches",
+    "description": "Pastel frito crocante com recheio de queijo, carne ou presunto.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 10,
+    "servings": 4,
+    "instructions": "Passo 1 — Rechear: Abra a massa de pastel e coloque o recheio no meio.\n\nPasso 2 — Fechar: Dobre ao meio e aperte bem as bordas com um garfo.\n\nPasso 3 — Fritar: Frite em óleo quente em fogo médio até dourar dos dois lados.",
+    "ingredients": [
+      { "name": "massa de pastel", "quantity": "1", "unit": "pacote" },
+      { "name": "queijo", "quantity": "100", "unit": "g" },
+      { "name": "presunto", "quantity": "100", "unit": "g" }
+    ]
+  },
+  {
+    "name": "Panqueca",
+    "category": "Massas e Lanches",
+    "description": "Panqueca fina recheada com carne, frango ou queijo.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 20,
+    "servings": 4,
+    "instructions": "Passo 1 — Misturar: Misture leite, farinha, ovos e sal até ficar líquido e sem bolinhas.\n\nPasso 2 — Fazer na Frigideira: Coloque pouca massa na frigideira quente e espalhe girando.\n\nPasso 3 — Virar: Quando a massa soltar do fundo, vire do outro lado.\n\nPasso 4 — Rechear: Coloque o recheio de sua preferência e enrole.",
+    "ingredients": [
+      { "name": "leite", "quantity": "2", "unit": "xícaras" },
+      { "name": "farinha de trigo", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Lasanha",
+    "category": "Massas e Lanches",
+    "description": "Lasanha em camadas com molho de carne, queijo e presunto.",
+    "prepTimeMinutes": 20,
+    "cookTimeMinutes": 45,
+    "servings": 6,
+    "instructions": "Passo 1 — Fazer o Molho: Refogue carne moída com cebola e adicione o molho de tomate.\n\nPasso 2 — Montar: Em um refratário, faça camadas de molho, massa de lasanha, queijo e presunto. Repita as camadas.\n\nPasso 3 — Assar: Asse a 200°C por 35 a 45 minutos.",
+    "ingredients": [
+      { "name": "massa de lasanha", "quantity": "250", "unit": "g" },
+      { "name": "carne moída", "quantity": "300", "unit": "g" },
+      { "name": "molho de tomate", "quantity": "2", "unit": "xícaras" },
+      { "name": "queijo", "quantity": "200", "unit": "g" },
+      { "name": "presunto", "quantity": "200", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" }
+    ]
+  },
+  {
+    "name": "Macarrão ao Molho Branco",
+    "category": "Massas e Lanches",
+    "description": "Macarrão cremoso com molho branco caseiro e queijo.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 25,
+    "servings": 4,
+    "instructions": "Passo 1 — Cozinhar o Macarrão: Cozinhe o macarrão em água fervendo conforme o tempo da embalagem.\n\nPasso 2 — Fazer o Molho: Na panela, coloque manteiga e farinha e misture. Adicione o leite aos poucos mexendo até engrossar.\n\nPasso 3 — Finalizar: Acrescente queijo e sal, misture no macarrão e sirva.",
+    "ingredients": [
+      { "name": "macarrão", "quantity": "500", "unit": "g" },
+      { "name": "leite", "quantity": "500", "unit": "ml" },
+      { "name": "manteiga", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "farinha de trigo", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "queijo", "quantity": "100", "unit": "g" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Torta Salgada de Liquidificador",
+    "category": "Massas e Lanches",
+    "description": "Torta salgada prática feita no liquidificador, aceita qualquer recheio.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 45,
+    "servings": 8,
+    "instructions": "Passo 1 — Bater: No liquidificador bata leite, ovos e óleo. Adicione farinha e fermento.\n\nPasso 2 — Montar: Na forma untada, coloque metade da massa, o recheio de sua preferência e cubra com o restante da massa.\n\nPasso 3 — Assar: Asse a 180°C por 35 a 45 minutos.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "2", "unit": "xícaras" },
+      { "name": "leite", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "óleo", "quantity": "1/2", "unit": "xícara" },
+      { "name": "fermento", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "sal", "quantity": "1", "unit": "colher de chá" }
+    ]
+  },
+  {
+    "name": "Pão Caseiro Simples",
+    "category": "Pães",
+    "description": "Pão caseiro fofinho e crocante, feito do zero sem complicação.",
+    "prepTimeMinutes": 70,
+    "cookTimeMinutes": 45,
+    "servings": 8,
+    "instructions": "Passo 1 — Misturar: Na tigela, misture farinha, fermento, açúcar e sal. Adicione óleo e água morna aos poucos até virar massa.\n\nPasso 2 — Sovar: Sove na mesa enfarinhada por 10 minutos até ficar lisa, macia e elástica.\n\nPasso 3 — Descansar: Cubra com pano e deixe descansar por 1 hora até crescer.\n\nPasso 4 — Assar: Modele o pão e asse a 180°C por 35 a 45 minutos.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "4", "unit": "xícaras" },
+      { "name": "fermento biológico seco", "quantity": "1", "unit": "sachê (10g)" },
+      { "name": "açúcar", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "sal", "quantity": "1", "unit": "colher de chá" },
+      { "name": "óleo", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "água morna", "quantity": "1 1/2", "unit": "xícara" }
+    ]
+  },
+  {
+    "name": "Pão de Leite",
+    "category": "Pães",
+    "description": "Pão de leite macio e levemente adocicado, ótimo para qualquer hora.",
+    "prepTimeMinutes": 75,
+    "cookTimeMinutes": 40,
+    "servings": 10,
+    "instructions": "Passo 1 — Misturar: Misture farinha, fermento, açúcar e sal. Adicione ovo, manteiga e leite morno até virar massa.\n\nPasso 2 — Sovar: Sove por 10 a 15 minutos até ficar macia e lisa.\n\nPasso 3 — Descansar: Cubra e deixe descansar por 1 hora.\n\nPasso 4 — Modelar: Faça bolinhas ou pão comprido.\n\nPasso 5 — Assar: Asse a 180°C por 30 a 40 minutos.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "4", "unit": "xícaras" },
+      { "name": "fermento biológico seco", "quantity": "1", "unit": "sachê" },
+      { "name": "ovo", "quantity": "1", "unit": "unidade" },
+      { "name": "manteiga", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "açúcar", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": "1", "unit": "colher de chá" },
+      { "name": "leite morno", "quantity": "1", "unit": "xícara" }
+    ]
+  },
+  {
+    "name": "Pão Recheado",
+    "category": "Pães",
+    "description": "Pão enrolado recheado com queijo e presunto, tipo rocambole salgado.",
+    "prepTimeMinutes": 100,
+    "cookTimeMinutes": 35,
+    "servings": 8,
+    "instructions": "Passo 1 — Fazer a Massa: Use a mesma massa do pão caseiro simples.\n\nPasso 2 — Abrir a Massa: Abra em formato de retângulo.\n\nPasso 3 — Colocar Recheio: Espalhe queijo e presunto sem colocar muito nas bordas.\n\nPasso 4 — Enrolar: Enrole como rocambole e feche as pontas.\n\nPasso 5 — Descansar: Deixe descansar por 30 minutos.\n\nPasso 6 — Assar: Asse a 180°C por 35 minutos.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "4", "unit": "xícaras" },
+      { "name": "fermento biológico seco", "quantity": "1", "unit": "sachê" },
+      { "name": "queijo", "quantity": "150", "unit": "g" },
+      { "name": "presunto", "quantity": "150", "unit": "g" },
+      { "name": "óleo", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "água morna", "quantity": "1 1/2", "unit": "xícara" }
+    ]
+  },
+  {
+    "name": "Pão de Alho",
+    "category": "Pães",
+    "description": "Pão de alho crocante com pasta de manteiga, alho e queijo.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 15,
+    "servings": 4,
+    "instructions": "Passo 1 — Fazer a Pasta: Misture manteiga, alho amassado, orégano e queijo ralado até virar um creme.\n\nPasso 2 — Cortar o Pão: Faça cortes no pão francês sem cortar até o final.\n\nPasso 3 — Passar a Pasta: Passe o creme dentro de cada corte.\n\nPasso 4 — Assar: Leve ao forno a 200°C por 10 a 15 minutos.",
+    "ingredients": [
+      { "name": "pão francês", "quantity": "4", "unit": "unidades" },
+      { "name": "manteiga", "quantity": "100", "unit": "g" },
+      { "name": "alho", "quantity": "3", "unit": "dentes amassados" },
+      { "name": "queijo ralado", "quantity": "4", "unit": "colheres de sopa" },
+      { "name": "orégano", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Bisnaguinha",
+    "category": "Pães",
+    "description": "Bisnaguinha macia e dourada, igual às de padaria.",
+    "prepTimeMinutes": 60,
+    "cookTimeMinutes": 25,
+    "servings": 16,
+    "instructions": "Passo 1 — Misturar: Misture farinha, fermento, ovo, manteiga, açúcar e leite morno até formar massa.\n\nPasso 2 — Sovar: Sove por 10 minutos.\n\nPasso 3 — Modelar: Faça rolinhos pequenos.\n\nPasso 4 — Descansar: Deixe descansar por 40 minutos.\n\nPasso 5 — Assar: Asse a 180°C por 25 minutos.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "4", "unit": "xícaras" },
+      { "name": "fermento biológico seco", "quantity": "1", "unit": "sachê" },
+      { "name": "ovo", "quantity": "1", "unit": "unidade" },
+      { "name": "manteiga", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "açúcar", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "leite morno", "quantity": "1", "unit": "xícara" }
+    ]
+  },
+  {
+    "name": "Pão Doce",
+    "category": "Pães",
+    "description": "Pão doce fofinho que pode ser recheado com coco, leite condensado ou creme.",
+    "prepTimeMinutes": 70,
+    "cookTimeMinutes": 35,
+    "servings": 10,
+    "instructions": "Passo 1 — Misturar: Misture farinha, fermento, açúcar, leite, ovos e manteiga até virar massa.\n\nPasso 2 — Sovar: Sove até ficar lisa e macia.\n\nPasso 3 — Descansar: Deixe descansar por 1 hora.\n\nPasso 4 — Finalizar: Modele e recheie com coco, leite condensado ou creme.\n\nPasso 5 — Assar: Asse a 180°C por 35 minutos.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "4", "unit": "xícaras" },
+      { "name": "fermento biológico seco", "quantity": "1", "unit": "sachê" },
+      { "name": "açúcar", "quantity": "4", "unit": "colheres de sopa" },
+      { "name": "leite", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "manteiga", "quantity": "50", "unit": "g" }
+    ]
+  },
+  {
+    "name": "Sonho Recheado",
+    "category": "Pães",
+    "description": "Sonho frito dourado recheado com doce de leite, creme ou chocolate.",
+    "prepTimeMinutes": 100,
+    "cookTimeMinutes": 15,
+    "servings": 12,
+    "instructions": "Passo 1 — Fazer a Massa: Misture farinha, fermento, leite, açúcar, ovos e manteiga. Sove por 10 minutos.\n\nPasso 2 — Descansar: Deixe descansar por 1 hora.\n\nPasso 3 — Modelar: Faça bolinhas.\n\nPasso 4 — Descansar Novamente: Deixe descansar por mais 30 minutos.\n\nPasso 5 — Fritar: Frite em óleo quente em fogo médio até dourar.\n\nPasso 6 — Rechear: Recheie com doce de leite, creme ou chocolate usando um bico de confeitar.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "3", "unit": "xícaras" },
+      { "name": "fermento biológico seco", "quantity": "1", "unit": "sachê" },
+      { "name": "leite", "quantity": "3/4", "unit": "xícara" },
+      { "name": "açúcar", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "manteiga", "quantity": "50", "unit": "g" },
+      { "name": "doce de leite ou creme", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Panqueca Fitness de Banana",
+    "category": "Fitness",
+    "description": "Panqueca saudável de banana com aveia, sem farinha e sem açúcar.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 10,
+    "servings": 2,
+    "instructions": "Passo 1 — Amassar a Banana: Descasque e amasse a banana com garfo até virar creme.\n\nPasso 2 — Misturar: Adicione os ovos e 2 colheres de aveia. Misture bem.\n\nPasso 3 — Frigideira: Passe pouco óleo ou manteiga na frigideira em fogo baixo.\n\nPasso 4 — Cozinhar: Coloque a mistura, espere firmar e vire. Fica macia, levemente dourada e naturalmente doce.",
+    "ingredients": [
+      { "name": "banana madura", "quantity": "1", "unit": "unidade" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "aveia", "quantity": "2", "unit": "colheres de sopa" }
+    ]
+  },
+  {
+    "name": "Frango Grelhado Fitness",
+    "category": "Fitness",
+    "description": "Filé de frango grelhado temperado com limão e alho, dourado por fora e suculento por dentro.",
+    "prepTimeMinutes": 20,
+    "cookTimeMinutes": 12,
+    "servings": 2,
+    "instructions": "Passo 1 — Temperar: Misture alho, sal e limão e passe no frango.\n\nPasso 2 — Descansar: Deixe descansar por 15 minutos para pegar sabor.\n\nPasso 3 — Grelhar: Na frigideira quente com pouco óleo, grelhe por 4 a 6 minutos de cada lado até ficar dourado por fora e branco por dentro. Não pode ficar rosado.",
+    "ingredients": [
+      { "name": "filé de frango", "quantity": "2", "unit": "unidades" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" },
+      { "name": "limão", "quantity": "1/2", "unit": "unidade" }
+    ]
+  },
+  {
+    "name": "Salada Fitness Simples",
+    "category": "Fitness",
+    "description": "Salada fresca, crocante e leve com legumes variados.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 0,
+    "servings": 2,
+    "instructions": "Passo 1 — Lavar Bem: Lave todos os ingredientes.\n\nPasso 2 — Cortar: Corte tomate e pepino. Rale a cenoura.\n\nPasso 3 — Misturar: Misture tudo numa tigela com a alface.\n\nPasso 4 — Temperar: Tempere com limão, azeite e pouco sal.",
+    "ingredients": [
+      { "name": "alface", "quantity": "1/2", "unit": "pé" },
+      { "name": "tomate", "quantity": "1", "unit": "unidade" },
+      { "name": "cenoura", "quantity": "1", "unit": "unidade" },
+      { "name": "pepino", "quantity": "1/2", "unit": "unidade" },
+      { "name": "limão", "quantity": "1/2", "unit": "unidade" },
+      { "name": "azeite", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "name": "Vitamina Fitness",
+    "category": "Fitness",
+    "description": "Vitamina nutritiva de banana com aveia, cremosa e consistente.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 0,
+    "servings": 1,
+    "instructions": "Passo 1 — Colocar no Liquidificador: Coloque banana, leite e aveia.\n\nPasso 2 — Bater: Bata por 1 minuto até ficar cremosa e consistente. Adicione mel a gosto se quiser.",
+    "ingredients": [
+      { "name": "banana", "quantity": "1", "unit": "unidade" },
+      { "name": "leite", "quantity": "200", "unit": "ml" },
+      { "name": "aveia", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "mel", "quantity": "1", "unit": "colher de chá (opcional)" }
+    ]
+  },
+  {
+    "name": "Omelete Fitness",
+    "category": "Fitness",
+    "description": "Omelete leve com tomate, queijo branco e orégano.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 8,
+    "servings": 1,
+    "instructions": "Passo 1 — Misturar: Misture ovos, tomate picado e queijo branco.\n\nPasso 2 — Cozinhar: Na frigideira em fogo médio, coloque a mistura e espere firmar. Polvilhe orégano e vire com cuidado.",
+    "ingredients": [
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "tomate", "quantity": "1/2", "unit": "unidade" },
+      { "name": "queijo branco", "quantity": "50", "unit": "g" },
+      { "name": "orégano", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Batata Doce Assada",
+    "category": "Fitness",
+    "description": "Batata doce assada temperada com azeite, dourada por fora e macia por dentro.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 40,
+    "servings": 2,
+    "instructions": "Passo 1 — Cortar: Corte a batata doce em rodelas ou tiras.\n\nPasso 2 — Temperar: Misture com azeite e sal.\n\nPasso 3 — Assar: Asse a 200°C por 30 a 40 minutos. Importante: vire na metade do tempo.",
+    "ingredients": [
+      { "name": "batata doce", "quantity": "2", "unit": "unidades médias" },
+      { "name": "azeite", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Sanduíche Fitness",
+    "category": "Fitness",
+    "description": "Sanduíche leve de pão integral com frango desfiado, alface e tomate.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 0,
+    "servings": 1,
+    "instructions": "Passo 1 — Preparar Recheio: Misture frango desfiado com requeijão light (opcional).\n\nPasso 2 — Montar: No pão integral coloque alface, tomate e o frango.",
+    "ingredients": [
+      { "name": "pão integral", "quantity": "2", "unit": "fatias" },
+      { "name": "frango desfiado", "quantity": "100", "unit": "g" },
+      { "name": "alface", "quantity": "a gosto", "unit": "" },
+      { "name": "tomate", "quantity": "2", "unit": "fatias" }
+    ]
+  },
+  {
+    "name": "Bolo Fitness de Banana",
+    "category": "Fitness",
+    "description": "Bolo saudável de banana com aveia e canela, sem farinha e sem açúcar.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 30,
+    "servings": 6,
+    "instructions": "Passo 1 — Misturar: Amasse as bananas. Adicione ovos, aveia e canela. Misture bem.\n\nPasso 2 — Forma: Unte a forma com manteiga.\n\nPasso 3 — Assar: Asse a 180°C por 30 minutos até ficar macio, cheiroso e úmido.",
+    "ingredients": [
+      { "name": "banana madura", "quantity": "3", "unit": "unidades" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "aveia", "quantity": "1", "unit": "xícara" },
+      { "name": "canela", "quantity": "1", "unit": "colher de chá" }
+    ]
+  },
+  {
+    "name": "Omelete",
+    "category": "Receitas Rápidas",
+    "description": "Omelete rápido e versátil com queijo, presunto e tomate.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 8,
+    "servings": 1,
+    "instructions": "Passo 1 — Quebrar os Ovos: Quebre os ovos numa tigela com cuidado para não cair casca.\n\nPasso 2 — Misturar: Adicione sal, queijo e presunto. Misture com garfo até gema e clara virarem uma mistura só.\n\nPasso 3 — Aquecer a Frigideira: Coloque um pouco de óleo ou manteiga em fogo médio.\n\nPasso 4 — Cozinhar: Despeje a mistura e espere firmar embaixo.\n\nPasso 5 — Virar: Com espátula, vire com cuidado e finalize.",
+    "ingredients": [
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" },
+      { "name": "queijo", "quantity": "30", "unit": "g" },
+      { "name": "presunto", "quantity": "2", "unit": "fatias" },
+      { "name": "tomate", "quantity": "1/4", "unit": "unidade" }
+    ]
+  },
+  {
+    "name": "Miojo Melhorado",
+    "category": "Receitas Rápidas",
+    "description": "Miojo incrementado com ovo, queijo e presunto, pronto em minutos.",
+    "prepTimeMinutes": 2,
+    "cookTimeMinutes": 5,
+    "servings": 1,
+    "instructions": "Passo 1 — Ferver a Água: Ferva água na panela.\n\nPasso 2 — Cozinhar o Miojo: Coloque o macarrão e cozinhe por 3 minutos mexendo devagar.\n\nPasso 3 — Temperar: Adicione o tempero do pacote e acrescente queijo, ovo e presunto a gosto.",
+    "ingredients": [
+      { "name": "miojo", "quantity": "1", "unit": "pacote" },
+      { "name": "queijo", "quantity": "30", "unit": "g" },
+      { "name": "ovo", "quantity": "1", "unit": "unidade" },
+      { "name": "presunto", "quantity": "2", "unit": "fatias" }
+    ]
+  },
+  {
+    "name": "Sanduíche Natural",
+    "category": "Receitas Rápidas",
+    "description": "Sanduíche natural leve e cremoso com frango, alface e tomate.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 0,
+    "servings": 1,
+    "instructions": "Passo 1 — Preparar os Ingredientes: Lave alface e tomate. Corte o tomate em fatias.\n\nPasso 2 — Misturar o Recheio: Misture frango desfiado com maionese até ficar cremoso.\n\nPasso 3 — Montar: No pão de forma coloque o recheio, alface e tomate. Feche.",
+    "ingredients": [
+      { "name": "pão de forma", "quantity": "2", "unit": "fatias" },
+      { "name": "maionese", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "alface", "quantity": "a gosto", "unit": "" },
+      { "name": "tomate", "quantity": "2", "unit": "fatias" },
+      { "name": "frango desfiado", "quantity": "80", "unit": "g" }
+    ]
+  },
+  {
+    "name": "Crepioca",
+    "category": "Receitas Rápidas",
+    "description": "Crepioca macia e levinha feita com ovo e tapioca.",
+    "prepTimeMinutes": 3,
+    "cookTimeMinutes": 5,
+    "servings": 1,
+    "instructions": "Passo 1 — Misturar: Misture ovo, tapioca e sal até virar mistura líquida.\n\nPasso 2 — Frigideira: Passe manteiga ou óleo na frigideira em fogo médio.\n\nPasso 3 — Cozinhar: Coloque a mistura e espere firmar.\n\nPasso 4 — Rechear: Coloque queijo, presunto ou frango e dobre ao meio.",
+    "ingredients": [
+      { "name": "ovo", "quantity": "1", "unit": "unidade" },
+      { "name": "tapioca", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" },
+      { "name": "queijo", "quantity": "30", "unit": "g" }
+    ]
+  },
+  {
+    "name": "Tapioca Recheada",
+    "category": "Receitas Rápidas",
+    "description": "Tapioca macia recheada com queijo e presunto, pronta em minutos.",
+    "prepTimeMinutes": 3,
+    "cookTimeMinutes": 5,
+    "servings": 1,
+    "instructions": "Passo 1 — Aquecer a Frigideira: Aqueça a frigideira em fogo médio. Não precisa óleo.\n\nPasso 2 — Colocar a Tapioca: Espalhe a goma de tapioca cobrindo toda a frigideira.\n\nPasso 3 — Esperar Firmar: Aguarde 1 a 2 minutos até começar a unir e ficar firme.\n\nPasso 4 — Colocar Recheio: Adicione queijo e presunto.\n\nPasso 5 — Dobrar: Dobre ao meio e espere o queijo derreter.",
+    "ingredients": [
+      { "name": "goma de tapioca", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "queijo", "quantity": "40", "unit": "g" },
+      { "name": "presunto", "quantity": "2", "unit": "fatias" }
+    ]
+  },
+  {
+    "name": "Bolinha de Queijo",
+    "category": "Tira Gostos e Petiscos",
+    "description": "Bolinha de queijo crocante por fora com queijo derretido por dentro.",
+    "prepTimeMinutes": 20,
+    "cookTimeMinutes": 10,
+    "servings": 20,
+    "instructions": "Passo 1 — Fazer a Massa: Na panela aqueça leite e manteiga. Quando aquecer, coloque a farinha e mexa até virar massa e desgrudar da panela.\n\nPasso 2 — Colocar o Queijo: Pegue um pedaço de massa, coloque um cubinho de mussarela no meio e feche em formato de bolinha.\n\nPasso 3 — Empanar: Passe no ovo e depois na farinha de rosca.\n\nPasso 4 — Fritar: Em óleo quente em fogo médio, frite até dourar.",
+    "ingredients": [
+      { "name": "queijo mussarela", "quantity": "200", "unit": "g" },
+      { "name": "farinha de trigo", "quantity": "1", "unit": "xícara" },
+      { "name": "leite", "quantity": "1", "unit": "xícara" },
+      { "name": "manteiga", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "farinha de rosca", "quantity": "1", "unit": "xícara" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" }
+    ]
+  },
+  {
+    "name": "Coxinha",
+    "category": "Tira Gostos e Petiscos",
+    "description": "Coxinha dourada e crocante recheada com frango desfiado.",
+    "prepTimeMinutes": 30,
+    "cookTimeMinutes": 15,
+    "servings": 20,
+    "instructions": "Passo 1 — Fazer a Massa: Na panela aqueça leite e manteiga. Adicione farinha e mexa até desgrudar da panela.\n\nPasso 2 — Rechear: Abra a massa na mão, coloque o frango desfiado e feche em formato de coxinha.\n\nPasso 3 — Empanar: Passe no ovo e na farinha de rosca.\n\nPasso 4 — Fritar: Em óleo quente em fogo médio, frite até dourar.",
+    "ingredients": [
+      { "name": "farinha de trigo", "quantity": "2", "unit": "xícaras" },
+      { "name": "leite", "quantity": "2", "unit": "xícaras" },
+      { "name": "manteiga", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "frango desfiado temperado", "quantity": "300", "unit": "g" },
+      { "name": "ovos", "quantity": "2", "unit": "unidades" },
+      { "name": "farinha de rosca", "quantity": "1", "unit": "xícara" }
+    ]
+  },
+  {
+    "name": "Batata Frita Crocante",
+    "category": "Tira Gostos e Petiscos",
+    "description": "Batata frita crocante e dourada, o petisco clássico.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 15,
+    "servings": 3,
+    "instructions": "Passo 1 — Cortar: Corte as batatas em tiras.\n\nPasso 2 — Secar Bem: Após lavar, seque muito bem. Isso é fundamental para ficarem crocantes.\n\nPasso 3 — Fritar: Em óleo bem quente, frite até dourar.\n\nPasso 4 — Sal: Coloque o sal somente depois de fritar.",
+    "ingredients": [
+      { "name": "batata", "quantity": "4", "unit": "unidades médias" },
+      { "name": "óleo", "quantity": "suficiente para fritar", "unit": "" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Enroladinho de Salsicha",
+    "category": "Tira Gostos e Petiscos",
+    "description": "Enroladinho de salsicha assado, dourado e crocante.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 30,
+    "servings": 12,
+    "instructions": "Passo 1 — Enrolar: Enrole a massa em espiral ao redor de cada salsicha.\n\nPasso 2 — Passar Ovo: Passe gema por cima para ajudar a dourar.\n\nPasso 3 — Assar: Asse a 180°C por 30 minutos até a massa ficar dourada.",
+    "ingredients": [
+      { "name": "massa para enroladinho", "quantity": "1", "unit": "pacote" },
+      { "name": "salsicha", "quantity": "12", "unit": "unidades" },
+      { "name": "ovo", "quantity": "1", "unit": "gema para pincelar" }
+    ]
+  },
+  {
+    "name": "Torrada com Alho",
+    "category": "Tira Gostos e Petiscos",
+    "description": "Torrada crocante e dourada com pasta de alho e orégano.",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 10,
+    "servings": 4,
+    "instructions": "Passo 1 — Fazer Pasta: Misture manteiga, alho amassado e orégano.\n\nPasso 2 — Passar no Pão: Espalhe a pasta nos pedaços de pão.\n\nPasso 3 — Assar: Leve ao forno a 180°C por 10 minutos até ficarem crocantes e douradas.",
+    "ingredients": [
+      { "name": "pão", "quantity": "8", "unit": "fatias" },
+      { "name": "manteiga", "quantity": "50", "unit": "g" },
+      { "name": "alho", "quantity": "2", "unit": "dentes amassados" },
+      { "name": "orégano", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Dadinho de Tapioca",
+    "category": "Tira Gostos e Petiscos",
+    "description": "Dadinho crocante por fora e macio por dentro com queijo coalho.",
+    "prepTimeMinutes": 40,
+    "cookTimeMinutes": 10,
+    "servings": 20,
+    "instructions": "Passo 1 — Misturar: Misture tapioca granulada e queijo coalho ralado. Adicione leite quente.\n\nPasso 2 — Descansar: Deixe descansar por 30 minutos até endurecer.\n\nPasso 3 — Cortar: Corte em quadradinhos.\n\nPasso 4 — Fritar ou Airfryer: Frite em óleo quente ou na airfryer até dourar.",
+    "ingredients": [
+      { "name": "tapioca granulada", "quantity": "1", "unit": "xícara" },
+      { "name": "queijo coalho", "quantity": "200", "unit": "g" },
+      { "name": "leite", "quantity": "1/2", "unit": "xícara" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Carne Louca no Pão",
+    "category": "Tira Gostos e Petiscos",
+    "description": "Carne desfiada molhadinha com molho de tomate e cebola servida no pão francês.",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 50,
+    "servings": 4,
+    "instructions": "Passo 1 — Cozinhar a Carne: Cozinhe a carne na panela de pressão por 40 minutos.\n\nPasso 2 — Desfiar: Desfie a carne cozida.\n\nPasso 3 — Fazer o Molho: Refogue cebola, tomate e molho. Adicione a carne desfiada e misture.\n\nPasso 4 — Montar: Coloque a carne louca no pão francês.",
+    "ingredients": [
+      { "name": "carne para desfiar", "quantity": "500", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "tomate", "quantity": "2", "unit": "unidades" },
+      { "name": "molho de tomate", "quantity": "1/2", "unit": "xícara" },
+      { "name": "pão francês", "quantity": "4", "unit": "unidades" }
+    ]
+  },
+  {
+    "name": "Espetinho Simples",
+    "category": "Tira Gostos e Petiscos",
+    "description": "Espetinho de carne, frango e linguiça temperados e assados.",
+    "prepTimeMinutes": 20,
+    "cookTimeMinutes": 20,
+    "servings": 4,
+    "instructions": "Passo 1 — Cortar: Corte a carne, frango e linguiça em cubos.\n\nPasso 2 — Temperar: Tempere com sal e alho.\n\nPasso 3 — Montar: Espete intercalando carne, frango e linguiça.\n\nPasso 4 — Assar: Asse na churrasqueira, forno ou airfryer até ficar dourado por fora e suculento por dentro.",
+    "ingredients": [
+      { "name": "carne", "quantity": "200", "unit": "g" },
+      { "name": "frango", "quantity": "200", "unit": "g" },
+      { "name": "linguiça", "quantity": "200", "unit": "g" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" }
+    ]
+  },
+  {
+    "name": "Hambúrguer Artesanal",
+    "category": "Hambúrgueres",
+    "description": "Hambúrguer artesanal suculento com queijo derretido no pão brioche.",
+    "prepTimeMinutes": 20,
+    "cookTimeMinutes": 10,
+    "servings": 2,
+    "instructions": "Passo 1 — Temperar a Carne: Coloque a carne moída na tigela e adicione apenas sal. Hambúrguer artesanal é só carne e sal.\n\nPasso 2 — Modelar: Faça discos redondos e grossos sem apertar demais.\n\nPasso 3 — Geladeira: Deixe na geladeira por 15 minutos para firmar.\n\nPasso 4 — Grelhar: Em frigideira bem quente com pouco óleo, grelhe 3 a 5 minutos de cada lado.\n\nPasso 5 — Colocar Queijo: Nos últimos minutos, coloque queijo por cima e espere derreter.\n\nPasso 6 — Montar: Monte no pão com hambúrguer, queijo, tomate e alface.",
+    "ingredients": [
+      { "name": "carne moída", "quantity": "500", "unit": "g" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" },
+      { "name": "pão brioche", "quantity": "2", "unit": "unidades" },
+      { "name": "queijo", "quantity": "2", "unit": "fatias" },
+      { "name": "tomate", "quantity": "1", "unit": "unidade" },
+      { "name": "alface", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Hambúrguer Fitness",
+    "category": "Hambúrgueres",
+    "description": "Hambúrguer leve de frango ou carne magra com aveia, dourado e macio.",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 10,
+    "servings": 2,
+    "instructions": "Passo 1 — Misturar: Misture frango moído ou carne magra com alho, sal e aveia.\n\nPasso 2 — Modelar: Faça discos médios.\n\nPasso 3 — Descansar: Deixe descansar por 10 minutos.\n\nPasso 4 — Grelhar: Em frigideira antiaderente com pouco óleo, grelhe 4 minutos de cada lado.\n\nPasso 5 — Montar: Sirva no pão integral com alface e tomate.",
+    "ingredients": [
+      { "name": "frango moído ou carne magra", "quantity": "400", "unit": "g" },
+      { "name": "aveia", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "alho", "quantity": "1", "unit": "dente" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" },
+      { "name": "pão integral", "quantity": "2", "unit": "unidades" }
+    ]
+  },
+  {
+    "name": "Hambúrguer Vegetariano",
+    "category": "Hambúrgueres",
+    "description": "Hambúrguer vegetariano de grão de bico ou lentilha, firme por fora e macio por dentro.",
+    "prepTimeMinutes": 30,
+    "cookTimeMinutes": 10,
+    "servings": 2,
+    "instructions": "Passo 1 — Amassar: Amasse o grão de bico ou lentilha cozida até virar massa grossa.\n\nPasso 2 — Misturar Temperos: Adicione cebola, alho, aveia e sal. Misture bem.\n\nPasso 3 — Modelar: Faça formato de hambúrguer apertando bem para não quebrar.\n\nPasso 4 — Geladeira: Deixe na geladeira por 20 minutos para firmar.\n\nPasso 5 — Grelhar: Em frigideira em fogo médio com pouco óleo, grelhe 4 minutos de cada lado.\n\nPasso 6 — Montar: Sirva no pão com tomate, alface e queijo.",
+    "ingredients": [
+      { "name": "grão de bico ou lentilha cozida", "quantity": "2", "unit": "xícaras" },
+      { "name": "aveia", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "cebola", "quantity": "1/2", "unit": "unidade" },
+      { "name": "alho", "quantity": "1", "unit": "dente" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Tapioca Simples",
+    "category": "Café da Manhã",
+    "description": "Tapioca tradicional com manteiga ou recheio doce, pronta em minutos.",
+    "prepTimeMinutes": 3, "cookTimeMinutes": 5, "servings": 1,
+    "instructions": "Passo 1 — Aquecer: Aqueça a frigideira em fogo médio sem óleo.\n\nPasso 2 — Espalhar: Espalhe a goma de tapioca cobrindo a frigideira e aguarde 1 a 2 minutos até firmar.\n\nPasso 3 — Rechear: Coloque manteiga, queijo, geleia ou o recheio que preferir e dobre ao meio.",
+    "ingredients": [
+      { "name": "goma de tapioca", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "manteiga", "quantity": "1", "unit": "colher de chá" }
+    ]
+  },
+  {
+    "name": "Ovos Mexidos",
+    "category": "Café da Manhã",
+    "description": "Ovos mexidos cremosos e macios, prontos em 5 minutos.",
+    "prepTimeMinutes": 2, "cookTimeMinutes": 5, "servings": 1,
+    "instructions": "Passo 1 — Misturar: Quebre os ovos numa tigela, adicione sal e misture com garfo até homogeneizar.\n\nPasso 2 — Cozinhar: Na frigideira com manteiga em fogo baixo, despeje os ovos. Mexa suavemente com espátula empurrando do lado para o centro. Retire ainda levemente úmido — eles terminam de cozinhar com o calor residual.",
+    "ingredients": [
+      { "name": "ovos", "quantity": "3", "unit": "unidades" },
+      { "name": "manteiga", "quantity": "1", "unit": "colher de chá" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Mingau de Aveia",
+    "category": "Café da Manhã",
+    "description": "Mingau cremoso de aveia com leite, nutritivo e fácil de fazer.",
+    "prepTimeMinutes": 2, "cookTimeMinutes": 8, "servings": 1,
+    "instructions": "Passo 1 — Misturar: Na panela coloque leite, aveia e açúcar. Misture antes de ligar o fogo.\n\nPasso 2 — Cozinhar: Fogo médio mexendo sem parar até engrossar (5 a 8 minutos). Sirva com canela por cima.",
+    "ingredients": [
+      { "name": "aveia em flocos", "quantity": "4", "unit": "colheres de sopa" },
+      { "name": "leite", "quantity": "300", "unit": "ml" },
+      { "name": "açúcar", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "canela", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Iogurte com Granola",
+    "category": "Café da Manhã",
+    "description": "Parfait rápido de iogurte com granola e frutas, sem cozimento.",
+    "prepTimeMinutes": 5, "cookTimeMinutes": 0, "servings": 1,
+    "instructions": "Monte no copo ou tigela em camadas: iogurte, granola, frutas picadas (banana, morango ou o que tiver). Finalize com mel se quiser.",
+    "ingredients": [
+      { "name": "iogurte natural", "quantity": "1", "unit": "pote (170g)" },
+      { "name": "granola", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "frutas", "quantity": "a gosto", "unit": "" },
+      { "name": "mel", "quantity": "1", "unit": "colher de chá (opcional)" }
+    ]
+  },
+  {
+    "name": "Torrada com Ovo",
+    "category": "Café da Manhã",
+    "description": "Torrada crocante com ovo frito, café da manhã completo e rápido.",
+    "prepTimeMinutes": 2, "cookTimeMinutes": 5, "servings": 1,
+    "instructions": "Passo 1 — Torrada: Torre o pão de forma na torradeira ou frigideira até dourar.\n\nPasso 2 — Ovo: Frite o ovo no azeite em fogo médio-baixo com a frigideira tampada por 2 minutos.\n\nPasso 3 — Montar: Coloque o ovo sobre a torrada e tempere com sal.",
+    "ingredients": [
+      { "name": "pão de forma", "quantity": "2", "unit": "fatias" },
+      { "name": "ovo", "quantity": "1", "unit": "unidade" },
+      { "name": "azeite", "quantity": "1", "unit": "colher de chá" },
+      { "name": "sal", "quantity": "a gosto", "unit": "" }
+    ]
+  },
+  {
+    "name": "Achocolatado Caseiro",
+    "category": "Café da Manhã",
+    "description": "Achocolatado cremoso feito em casa, sem conservantes.",
+    "prepTimeMinutes": 2, "cookTimeMinutes": 5, "servings": 2,
+    "instructions": "Na panela misture leite, chocolate em pó e açúcar a frio. Leve ao fogo médio mexendo até aquecer e dissolver tudo. Sirva quente ou gelado.",
+    "ingredients": [
+      { "name": "leite", "quantity": "500", "unit": "ml" },
+      { "name": "chocolate em pó", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "açúcar", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  }
+]
