@@ -98,7 +98,10 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
         <button
           className="sidebar-link"
           style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}
-          onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login' } } })}
+          onClick={async () => {
+            try { await signOut() } catch { /* ignore */ }
+            window.location.href = '/login'
+          }}
         >
           <LogOut size={16} />
           Sair
