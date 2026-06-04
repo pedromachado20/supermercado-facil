@@ -86,8 +86,9 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
             </div>
           </div>
           <button
-            className="sidebar-link" style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer' }}
-            onClick={() => signOut()}
+            className="sidebar-link"
+            style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}
+            onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login' } } })}
           >
             <LogOut size={16} />
             Sair
