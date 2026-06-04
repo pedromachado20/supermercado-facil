@@ -1,11 +1,19 @@
 import { createFileRoute, Outlet, Link, redirect, useRouterState } from '@tanstack/react-router'
-import { useSession, signOut } from '#/lib/auth-client'
+import { signOut } from '#/lib/auth-client'
+import { createServerFn } from '@tanstack/react-start'
+import { auth } from '#/lib/auth'
+import { useQuery } from '@tanstack/react-query'
 import {
   Store, Package, Tag, UploadCloud,
   LayoutDashboard, BarChart2, LogOut, ChefHat,
-  Menu, X, ShoppingBag
+  Menu, X, ShoppingBag, ShoppingCart
 } from 'lucide-react'
 import { useState } from 'react'
+
+const getSession = createServerFn({ method: 'GET' }).handler(async ({ request }) => {
+  const s = await auth.api.getSession({ headers: request.headers })
+  return s ? { name: s.user.name, email: s.user.email } : null
+})
 
 export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context }) => {
@@ -15,17 +23,18 @@ export const Route = createFileRoute('/_app')({
 })
 
 const NAV = [
-  { to: '/',           label: 'Dashboard',     icon: LayoutDashboard },
-  { to: '/mercados',   label: 'Supermercados', icon: Store },
-  { to: '/produtos',   label: 'Produtos',      icon: Package },
-  { to: '/categorias', label: 'Categorias',    icon: Tag },
+  { to: '/',           label: 'Dashboard',      icon: LayoutDashboard },
+  { to: '/mercados',   label: 'Supermercados',  icon: Store },
+  { to: '/produtos',   label: 'Produtos',       icon: Package },
+  { to: '/categorias', label: 'Categorias',     icon: Tag },
+  { to: '/lista',      label: 'Lista de Compras', icon: ShoppingCart },
   { to: '/importar',   label: 'Importar Dados', icon: UploadCloud },
-  { to: '/receitas',   label: 'Receitas',      icon: ChefHat },
-  { to: '/relatorios', label: 'Relatórios',    icon: BarChart2 },
+  { to: '/receitas',   label: 'Receitas',       icon: ChefHat },
+  { to: '/relatorios', label: 'Relatórios',     icon: BarChart2 },
 ]
 
 function Sidebar({ onClose }: { onClose?: () => void }) {
-  const { data: session } = useSession()
+  const { data: session } = useQuery({ queryKey: ['session'], queryFn: () => getSession(), staleTime: 60_000 })
   const routerState = useRouterState()
   const path = routerState.location.pathname
 
@@ -74,14 +83,14 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 700, fontSize: '0.75rem', color: 'var(--color-primary)', flexShrink: 0,
             }}>
-              {session.user.name?.[0]?.toUpperCase() ?? 'U'}
+              {session.name?.[0]?.toUpperCase() ?? 'U'}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '0.8125rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {session.user.name}
+                {session.name}
               </div>
               <div style={{ fontSize: '0.7rem', color: 'var(--color-text-soft)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {session.user.email}
+                {session.email}
               </div>
             </div>
           </div>
