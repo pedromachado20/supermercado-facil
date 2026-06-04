@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/db'
-import { categories } from '#/db/schema'
+import { categories, products } from '#/db/schema'
 import { eq, asc } from 'drizzle-orm'
 
 export const listarCategorias = createServerFn({ method: 'GET' }).handler(async () => {
@@ -31,6 +31,7 @@ export const atualizarCategoria = createServerFn({ method: 'POST' })
 export const excluirCategoria = createServerFn({ method: 'POST' })
   .inputValidator((d: { id: string }) => d)
   .handler(async ({ data }) => {
+    await db.update(products).set({ categoryId: null }).where(eq(products.categoryId, data.id))
     await db.delete(categories).where(eq(categories.id, data.id))
     return { ok: true }
   })
