@@ -1,19 +1,25 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/db'
 import { shoppingListItems, products, priceEntries, supermarkets, categories } from '#/db/schema'
-import { eq, asc, isNull, isNotNull, or, sql } from 'drizzle-orm'
+import { eq, asc, and, sql } from 'drizzle-orm'
+import { requireUserId } from '#/server/get-user'
 
-export const listarItensLista = createServerFn({ method: 'GET' }).handler(async () => {
-  // Passo 1: IDs de produtos que têm pelo menos um preço
+export const listarItensLista = createServerFn({ method: 'GET' }).handler(async ({ request }) => {
+  const userId = await requireUserId(request)
+
+  // Passo 1: IDs de produtos do usuário que têm pelo menos um preço
   const comPreco = await db
     .selectDistinct({ productId: priceEntries.productId })
     .from(priceEntries)
+    .innerJoin(products, eq(priceEntries.productId, products.id))
+    .where(eq(products.userId, userId))
   const idsComPreco = comPreco.map(r => r.productId)
 
   // Passo 2: encontra itens inválidos (produto excluído ou sem preço)
   const todosItens = await db
     .select({ id: shoppingListItems.id, productId: shoppingListItems.productId })
     .from(shoppingListItems)
+    .where(eq(shoppingListItems.userId, userId))
 
   const invalidos = todosItens
     .filter(i => i.productId !== null && !idsComPreco.includes(i.productId))
@@ -37,6 +43,7 @@ export const listarItensLista = createServerFn({ method: 'GET' }).handler(async 
     .from(shoppingListItems)
     .leftJoin(products, eq(shoppingListItems.productId, products.id))
     .leftJoin(categories, eq(products.categoryId, categories.id))
+    .where(eq(shoppingListItems.userId, userId))
     .orderBy(asc(shoppingListItems.sortOrder), asc(shoppingListItems.createdAt))
 
   // Passo 4: melhor preço + supermercado para cada produto
@@ -69,8 +76,10 @@ export const listarItensLista = createServerFn({ method: 'GET' }).handler(async 
 
 export const adicionarItemLista = createServerFn({ method: 'POST' })
   .inputValidator((d: { productId?: string; customName?: string; quantity?: number; unit?: string }) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
     const [item] = await db.insert(shoppingListItems).values({
+      userId,
       productId: data.productId || null,
       customName: data.customName || null,
       quantity: data.quantity ?? 1,
@@ -81,24 +90,33 @@ export const adicionarItemLista = createServerFn({ method: 'POST' })
 
 export const toggleItemLista = createServerFn({ method: 'POST' })
   .inputValidator((d: { id: string; checked: boolean }) => d)
-  .handler(async ({ data }) => {
-    await db.update(shoppingListItems).set({ checked: data.checked }).where(eq(shoppingListItems.id, data.id))
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    await db.update(shoppingListItems)
+      .set({ checked: data.checked })
+      .where(and(eq(shoppingListItems.id, data.id), eq(shoppingListItems.userId, userId)))
     return { ok: true }
   })
 
 export const removerItemLista = createServerFn({ method: 'POST' })
   .inputValidator((d: { id: string }) => d)
-  .handler(async ({ data }) => {
-    await db.delete(shoppingListItems).where(eq(shoppingListItems.id, data.id))
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    await db.delete(shoppingListItems)
+      .where(and(eq(shoppingListItems.id, data.id), eq(shoppingListItems.userId, userId)))
     return { ok: true }
   })
 
-export const limparListaMarcados = createServerFn({ method: 'POST' }).handler(async () => {
-  await db.delete(shoppingListItems).where(eq(shoppingListItems.checked, true))
+export const limparListaMarcados = createServerFn({ method: 'POST' }).handler(async ({ request }) => {
+  const userId = await requireUserId(request)
+  await db.delete(shoppingListItems)
+    .where(and(eq(shoppingListItems.userId, userId), eq(shoppingListItems.checked, true)))
   return { ok: true }
 })
 
-export const buscarMelhorPrecoLista = createServerFn({ method: 'GET' }).handler(async () => {
+export const buscarMelhorPrecoLista = createServerFn({ method: 'GET' }).handler(async ({ request }) => {
+  const userId = await requireUserId(request)
+
   const itens = await db.select({
     id: shoppingListItems.id, productId: shoppingListItems.productId,
     quantity: shoppingListItems.quantity, checked: shoppingListItems.checked,
@@ -106,7 +124,7 @@ export const buscarMelhorPrecoLista = createServerFn({ method: 'GET' }).handler(
   })
     .from(shoppingListItems)
     .leftJoin(products, eq(shoppingListItems.productId, products.id))
-    .where(eq(shoppingListItems.checked, false))
+    .where(and(eq(shoppingListItems.userId, userId), eq(shoppingListItems.checked, false)))
 
   const resultado = []
   for (const item of itens) {

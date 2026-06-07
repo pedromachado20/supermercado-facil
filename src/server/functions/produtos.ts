@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/db'
 import { products, priceEntries, categories, supermarkets, shoppingListItems } from '#/db/schema'
 import { eq, ilike, or, and, sql } from 'drizzle-orm'
+import { requireUserId } from '#/server/get-user'
 
 const EMBALAGEM_RE = /\b(LATÃO|LATAO|LATA[OÃ]?|GARRAFÃO|GARRAF[AÃ]O|GARRAFINHA|GARRAFA|PET|VIDRO|TETRA\s*PA[KC]K?|LONGA\s*VIDA)\b/g
 
@@ -22,8 +23,9 @@ function normalizeName(name: string): string {
 
 export const listarProdutos = createServerFn({ method: 'POST' })
   .inputValidator((d: { busca?: string; categoriaId?: string; limit?: number; offset?: number }) => d)
-  .handler(async ({ data }) => {
-    const where: any[] = []
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    const where: any[] = [eq(products.userId, userId)]
     if (data.busca) where.push(or(ilike(products.name, `%${data.busca}%`), ilike(products.brand, `%${data.busca}%`)))
     if (data.categoriaId) where.push(eq(products.categoryId, data.categoriaId))
 
@@ -34,7 +36,7 @@ export const listarProdutos = createServerFn({ method: 'POST' })
     })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
-      .where(where.length ? and(...where) : undefined)
+      .where(and(...where))
       .orderBy(products.name)
       .limit(data.limit ?? 100)
       .offset(data.offset ?? 0)
@@ -42,14 +44,18 @@ export const listarProdutos = createServerFn({ method: 'POST' })
 
 export const buscarProdutosComPrecos = createServerFn({ method: 'POST' })
   .inputValidator((d: { busca: string }) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
     const prods = await db.select({
       id: products.id, name: products.name, brand: products.brand,
       unit: products.unit, categoryName: categories.name,
     })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
-      .where(or(ilike(products.name, `%${data.busca}%`), ilike(products.brand, `%${data.busca}%`)))
+      .where(and(
+        eq(products.userId, userId),
+        or(ilike(products.name, `%${data.busca}%`), ilike(products.brand, `%${data.busca}%`)),
+      ))
       .orderBy(products.name).limit(50)
 
     if (!prods.length) return []
@@ -72,8 +78,10 @@ export const buscarProdutosComPrecos = createServerFn({ method: 'POST' })
 
 export const criarProduto = createServerFn({ method: 'POST' })
   .inputValidator((d: { name: string; brand?: string; categoryId?: string; unit?: string; barcode?: string }) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
     const [p] = await db.insert(products).values({
+      userId,
       name: data.name, brand: data.brand || null,
       categoryId: data.categoryId || null, unit: data.unit || null, barcode: data.barcode || null,
     }).returning()
@@ -93,40 +101,53 @@ export const criarEntradaPreco = createServerFn({ method: 'POST' })
 
 export const atualizarProduto = createServerFn({ method: 'POST' })
   .inputValidator((d: { id: string; name: string; brand?: string; categoryId?: string; unit?: string }) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
     const [p] = await db.update(products)
       .set({ name: data.name, brand: data.brand || null, categoryId: data.categoryId || null, unit: data.unit || null })
-      .where(eq(products.id, data.id))
+      .where(and(eq(products.id, data.id), eq(products.userId, userId)))
       .returning()
     return p
   })
 
 export const excluirProduto = createServerFn({ method: 'POST' })
   .inputValidator((d: { id: string }) => d)
-  .handler(async ({ data }) => {
-    await db.delete(shoppingListItems).where(eq(shoppingListItems.productId, data.id))
-    await db.delete(products).where(eq(products.id, data.id))
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    await db.delete(shoppingListItems).where(
+      and(eq(shoppingListItems.productId, data.id), eq(shoppingListItems.userId, userId))
+    )
+    await db.delete(products).where(and(eq(products.id, data.id), eq(products.userId, userId)))
     return { ok: true }
   })
 
 export const excluirProdutosEmLote = createServerFn({ method: 'POST' })
   .inputValidator((d: { ids: string[] }) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
     if (!data.ids.length) return { ok: true, deleted: 0 }
     await db.delete(shoppingListItems).where(
-      sql`${shoppingListItems.productId} = ANY(ARRAY[${sql.join(data.ids.map(id => sql`${id}`), sql`, `)}]::text[])`
+      and(
+        sql`${shoppingListItems.productId} = ANY(ARRAY[${sql.join(data.ids.map(id => sql`${id}`), sql`, `)}]::text[])`,
+        eq(shoppingListItems.userId, userId),
+      )
     )
     await db.delete(products).where(
-      sql`${products.id} = ANY(ARRAY[${sql.join(data.ids.map(id => sql`${id}`), sql`, `)}]::text[])`
+      and(
+        sql`${products.id} = ANY(ARRAY[${sql.join(data.ids.map(id => sql`${id}`), sql`, `)}]::text[])`,
+        eq(products.userId, userId),
+      )
     )
     return { ok: true, deleted: data.ids.length }
   })
 
 export const mesclarDuplicatas = createServerFn({ method: 'POST' })
-  .handler(async () => {
-    const allProducts = await db.select({ id: products.id, name: products.name }).from(products)
+  .handler(async ({ request }) => {
+    const userId = await requireUserId(request)
+    const allProducts = await db.select({ id: products.id, name: products.name })
+      .from(products)
+      .where(eq(products.userId, userId))
 
-    // Agrupa produtos pelo nome normalizado
     const groups = new Map<string, { id: string; name: string }[]>()
     for (const p of allProducts) {
       const key = normalizeName(p.name)
@@ -139,7 +160,6 @@ export const mesclarDuplicatas = createServerFn({ method: 'POST' })
     for (const [normalizedName, group] of groups) {
       if (group.length <= 1) continue
 
-      // Encontra o produto com mais preços (vira o principal)
       const counts = await Promise.all(group.map(async p => {
         const [row] = await db.select({ count: sql<number>`count(*)::int` })
           .from(priceEntries).where(eq(priceEntries.productId, p.id))
@@ -150,19 +170,16 @@ export const mesclarDuplicatas = createServerFn({ method: 'POST' })
       const winnerId = counts[0].id
       const loserIds = counts.slice(1).map(c => c.id)
 
-      // Transfere todos os preços dos duplicados para o principal
       for (const loserId of loserIds) {
         await db.update(priceEntries)
           .set({ productId: winnerId })
           .where(eq(priceEntries.productId, loserId))
       }
 
-      // Renomeia o principal para o nome normalizado
       await db.update(products)
         .set({ name: normalizedName })
         .where(eq(products.id, winnerId))
 
-      // Apaga os duplicados (price_entries já foram transferidos)
       for (const loserId of loserIds) {
         await db.delete(products).where(eq(products.id, loserId))
       }
@@ -175,8 +192,9 @@ export const mesclarDuplicatas = createServerFn({ method: 'POST' })
 
 export const listarProdutosComPrecos = createServerFn({ method: 'POST' })
   .inputValidator((d: { busca?: string; categoriaId?: string; supermarketId?: string }) => d)
-  .handler(async ({ data }) => {
-    const where: any[] = []
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    const where: any[] = [eq(products.userId, userId)]
     if (data.busca) where.push(or(ilike(products.name, `%${data.busca}%`), ilike(products.brand, `%${data.busca}%`)))
     if (data.categoriaId) where.push(eq(products.categoryId, data.categoriaId))
     if (data.supermarketId) where.push(eq(priceEntries.supermarketId, data.supermarketId))
@@ -199,10 +217,9 @@ export const listarProdutosComPrecos = createServerFn({ method: 'POST' })
       .innerJoin(products, eq(priceEntries.productId, products.id))
       .innerJoin(supermarkets, eq(priceEntries.supermarketId, supermarkets.id))
       .leftJoin(categories, eq(products.categoryId, categories.id))
-      .where(where.length ? and(...where) : undefined)
+      .where(and(...where))
       .orderBy(supermarkets.name, categories.name, products.name, priceEntries.createdAt)
 
-    // Combina preço normal + promo em uma única linha por (produto, supermercado)
     type Combined = {
       productId: string; name: string; brand: string | null; unit: string | null
       categoryId: string | null; categoryName: string | null

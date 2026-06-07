@@ -65,6 +65,7 @@ export const verification = pgTable('verification', {
 
 export const supermarkets = pgTable('supermarkets', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id'),
   name: text('name').notNull(),
   logoUrl: text('logo_url'),
   websiteUrl: text('website_url'),
@@ -90,6 +91,7 @@ export const categories = pgTable('categories', {
 
 export const products = pgTable('products', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id'),
   name: text('name').notNull(),
   brand: text('brand'),
   categoryId: text('category_id').references(() => categories.id),
@@ -119,6 +121,7 @@ export const priceEntries = pgTable('price_entries', {
 
 export const ingestionJobs = pgTable('ingestion_jobs', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id'),
   supermarketId: text('supermarket_id').notNull().references(() => supermarkets.id),
   sourceType: sourceTypeEnum('source_type').notNull(),
   sourceUrl: text('source_url'),
@@ -136,6 +139,7 @@ export const ingestionJobs = pgTable('ingestion_jobs', {
 
 export const shoppingListItems = pgTable('shopping_list_items', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id'),
   productId: text('product_id').references(() => products.id),
   customName: text('custom_name'),
   quantity: integer('quantity').default(1).notNull(),

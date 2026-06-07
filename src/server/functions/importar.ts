@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/db'
 import { ingestionJobs, products, priceEntries, categories } from '#/db/schema'
 import { eq, ilike, and } from 'drizzle-orm'
+import { requireUserId } from '#/server/get-user'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -282,6 +283,7 @@ async function fetchPageContent(url: string): Promise<string> {
 // ─── Persistência com deduplicação ────────────────────────────────────────────
 
 async function salvarProdutos(
+  userId: string,
   extracted: ExtractedProduct[],
   supermarketId: string,
   sourceType: 'link' | 'photo' | 'pdf',
@@ -330,7 +332,7 @@ async function salvarProdutos(
     const normalizedName = normalizeName(item.name)
 
     let [prod] = await db.select().from(products)
-      .where(ilike(products.name, normalizedName))
+      .where(and(ilike(products.name, normalizedName), eq(products.userId, userId)))
       .limit(1)
 
     // Second pass: existing products may still have container words (LATA, GARRAFA…)
@@ -340,7 +342,7 @@ async function salvarProdutos(
       if (qtyMatch) {
         const candidates = await db.select({ id: products.id, name: products.name })
           .from(products)
-          .where(ilike(products.name, `%${qtyMatch[1]}%`))
+          .where(and(ilike(products.name, `%${qtyMatch[1]}%`), eq(products.userId, userId)))
           .limit(100)
         const match = candidates.find(c => normalizeName(c.name) === normalizedName)
         if (match) {
@@ -356,6 +358,7 @@ async function salvarProdutos(
 
     if (!prod) {
       const [newProd] = await db.insert(products).values({
+        userId,
         name: normalizedName,
         brand: item.brand ? item.brand.trim().toUpperCase() : null,
         categoryId: await resolverOuCriarCategoria(item.category),
@@ -408,10 +411,12 @@ export const verificarProvedores = createServerFn({ method: 'GET' }).handler(asy
 
 export const importarLink = createServerFn({ method: 'POST' })
   .inputValidator((d: { supermarketId: string; supermarketName: string; url: string; isPromo?: boolean }) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
     requireProvider()
 
     const [job] = await db.insert(ingestionJobs).values({
+      userId,
       supermarketId: data.supermarketId,
       sourceType: 'link',
       sourceUrl: data.url,
@@ -421,7 +426,7 @@ export const importarLink = createServerFn({ method: 'POST' })
     try {
       const text = await fetchPageContent(data.url)
       const extracted = await extrairDeTexto(text, data.supermarketName)
-      const { found, imported } = await salvarProdutos(extracted, data.supermarketId, 'link', data.url, data.isPromo ?? false)
+      const { found, imported } = await salvarProdutos(userId, extracted, data.supermarketId, 'link', data.url, data.isPromo ?? false)
 
       await db.update(ingestionJobs).set({
         status: 'completed', productsFound: found, productsImported: imported, completedAt: new Date(),
@@ -438,12 +443,14 @@ export const importarLink = createServerFn({ method: 'POST' })
 
 export const importarArquivo = createServerFn({ method: 'POST' })
   .inputValidator((d: { supermarketId: string; supermarketName: string; base64: string; mimeType: string; isPromo?: boolean }) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
     requireProvider()
 
     const sourceType = data.mimeType === 'application/pdf' ? 'pdf' as const : 'photo' as const
 
     const [job] = await db.insert(ingestionJobs).values({
+      userId,
       supermarketId: data.supermarketId,
       sourceType,
       status: 'running',
@@ -451,7 +458,7 @@ export const importarArquivo = createServerFn({ method: 'POST' })
 
     try {
       const extracted = await extrairDeArquivo(data.base64, data.mimeType, data.supermarketName)
-      const { found, imported } = await salvarProdutos(extracted, data.supermarketId, sourceType, undefined, data.isPromo ?? false)
+      const { found, imported } = await salvarProdutos(userId, extracted, data.supermarketId, sourceType, undefined, data.isPromo ?? false)
 
       await db.update(ingestionJobs).set({
         status: 'completed', productsFound: found, productsImported: imported, completedAt: new Date(),
@@ -466,14 +473,18 @@ export const importarArquivo = createServerFn({ method: 'POST' })
     }
   })
 
-export const listarJobs = createServerFn({ method: 'GET' }).handler(async () => {
-  const jobs = await db.select().from(ingestionJobs).orderBy(ingestionJobs.createdAt)
+export const listarJobs = createServerFn({ method: 'GET' }).handler(async ({ request }) => {
+  const userId = await requireUserId(request)
+  const jobs = await db.select().from(ingestionJobs)
+    .where(eq(ingestionJobs.userId, userId))
+    .orderBy(ingestionJobs.createdAt)
   return jobs.reverse().slice(0, 20)
 })
 
 export const excluirJob = createServerFn({ method: 'POST' })
   .inputValidator((d: { id: string }) => d)
-  .handler(async ({ data }) => {
-    await db.delete(ingestionJobs).where(eq(ingestionJobs.id, data.id))
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    await db.delete(ingestionJobs).where(and(eq(ingestionJobs.id, data.id), eq(ingestionJobs.userId, userId)))
     return { ok: true }
   })
