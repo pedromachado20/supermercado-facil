@@ -27,8 +27,8 @@ function RegistroPage() {
       } else {
         navigate({ to: '/' })
       }
-    } catch {
-      setError('Erro ao criar conta. Tente novamente.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao criar conta. Tente novamente.')
     } finally {
       setLoading(false)
     }
