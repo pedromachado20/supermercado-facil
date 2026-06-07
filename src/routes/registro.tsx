@@ -23,7 +23,8 @@ function RegistroPage() {
     try {
       const res = await signUp.email({ name, email, password })
       if (res.error) {
-        setError(res.error.message || 'Erro ao criar conta.')
+        console.error('better-auth error:', JSON.stringify(res.error))
+        setError(res.error.message || `Erro ${res.error.status ?? ''}: ${res.error.code ?? 'desconhecido'}`)
       } else {
         navigate({ to: '/' })
       }
