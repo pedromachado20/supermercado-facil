@@ -1,9 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listarItensLista, adicionarItemLista, toggleItemLista, removerItemLista, limparListaMarcados, buscarMelhorPrecoLista } from '#/server/functions/lista'
-import { buscarProdutosComPrecos } from '#/server/functions/produtos'
-import { ShoppingCart, Plus, Trash2, X, TrendingDown, Printer, Check } from 'lucide-react'
-import { useState } from 'react'
+import {
+  listarItensLista, adicionarItemLista, toggleItemLista, removerItemLista,
+  limparListaMarcados, buscarMelhorPrecoLista, definirAlertaPreco,
+  listarListas, criarLista, renomearLista, excluirLista, obterOuCriarListaDefault,
+} from '#/server/functions/lista'
+import { obterConfiguracoes, salvarConfiguracoes } from '#/server/functions/configuracoes'
+import { buscarProdutosComPrecos, buscarProdutoPorCodigoBarras } from '#/server/functions/produtos'
+import { ShoppingCart, Plus, Trash2, X, TrendingDown, Printer, Share2, List, Pencil, Check, Bell, BellOff, Wallet, Camera } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
 
 export const Route = createFileRoute('/_app/lista')({
   component: ListaPage,
@@ -19,23 +24,59 @@ function ListaPage() {
   const [qty, setQty] = useState(1)
   const [produtoId, setProdutoId] = useState('')
   const [tab, setTab] = useState<'lista' | 'economia'>('lista')
+  const [modalListas, setModalListas] = useState(false)
+  const [novaLista, setNovaLista] = useState('')
+  const [renomeando, setRenomeando] = useState<{ id: string; name: string } | null>(null)
+  const [listaAtualId, setListaAtualId] = useState<string | null>(null)
+  const [alertModal, setAlertModal] = useState<{ id: string; name: string; current: number | null } | null>(null)
+  const [alertInput, setAlertInput] = useState('')
+  const [editandoOrcamento, setEditandoOrcamento] = useState(false)
+  const [orcamentoInput, setOrcamentoInput] = useState('')
+  const [scannerAberto, setScannerAberto] = useState(false)
+  const [scanMsg, setScanMsg] = useState('')
 
-  const { data: itens = [], isLoading } = useQuery({ queryKey: ['lista'], queryFn: () => listarItensLista(), staleTime: 0 })
+  const { data: listaDefault } = useQuery({
+    queryKey: ['lista-default'],
+    queryFn: () => obterOuCriarListaDefault(),
+    staleTime: 60_000,
+  })
+  const { data: listas = [] } = useQuery({
+    queryKey: ['listas'],
+    queryFn: () => listarListas(),
+    staleTime: 0,
+  })
+
+  const listaId = listaAtualId ?? listaDefault?.id ?? null
+  const listaNome = listas.find(l => l.id === listaId)?.name ?? listaDefault?.name ?? 'Minha Lista'
+
+  const { data: itens = [], isLoading } = useQuery({
+    queryKey: ['lista', listaId],
+    queryFn: () => listarItensLista({ data: { listId: listaId ?? undefined } }),
+    staleTime: 0,
+    enabled: !!listaId,
+  })
   const { data: produtos = [] } = useQuery({
     queryKey: ['produtos-busca', busca],
     queryFn: () => buscarProdutosComPrecos({ data: { busca } }),
     enabled: modal && busca.length > 1,
   })
   const { data: economia = [], isFetching: calculando } = useQuery({
-    queryKey: ['economia'],
+    queryKey: ['economia', listaId],
     queryFn: () => buscarMelhorPrecoLista(),
     enabled: tab === 'economia',
   })
+  const { data: config, refetch: refetchConfig } = useQuery({
+    queryKey: ['config'],
+    queryFn: () => obterConfiguracoes(),
+    staleTime: 60_000,
+  })
+  const budget = config?.monthlyBudget != null ? Number(config.monthlyBudget) : null
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['lista'] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['lista', listaId] })
+  const invalidateListas = () => qc.invalidateQueries({ queryKey: ['listas'] })
 
   const adicionar = useMutation({
-    mutationFn: () => adicionarItemLista({ data: { productId: produtoId || undefined, customName: customName || undefined, quantity: qty } }),
+    mutationFn: () => adicionarItemLista({ data: { productId: produtoId || undefined, customName: customName || undefined, quantity: qty, listId: listaId ?? undefined } }),
     onSuccess: () => { invalidate(); setModal(false); resetForm() },
   })
   const toggle = useMutation({
@@ -50,6 +91,30 @@ function ListaPage() {
     mutationFn: () => limparListaMarcados(),
     onSuccess: invalidate,
   })
+  const criarNova = useMutation({
+    mutationFn: (name: string) => criarLista({ data: { name } }),
+    onSuccess: (lista) => { invalidateListas(); setListaAtualId(lista.id); setNovaLista('') },
+  })
+  const renomear = useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) => renomearLista({ data: { id, name } }),
+    onSuccess: () => { invalidateListas(); setRenomeando(null) },
+  })
+  const deletarLista = useMutation({
+    mutationFn: (id: string) => excluirLista({ data: { id } }),
+    onSuccess: (_, id) => {
+      invalidateListas()
+      if (listaAtualId === id) setListaAtualId(null)
+    },
+  })
+  const salvarAlerta = useMutation({
+    mutationFn: ({ id, alertPrice }: { id: string; alertPrice: number | null }) =>
+      definirAlertaPreco({ data: { id, alertPrice } }),
+    onSuccess: () => { invalidate(); setAlertModal(null); setAlertInput('') },
+  })
+  const salvarOrcamento = useMutation({
+    mutationFn: (monthlyBudget: number | null) => salvarConfiguracoes({ data: { monthlyBudget } }),
+    onSuccess: () => { refetchConfig(); setEditandoOrcamento(false); setOrcamentoInput('') },
+  })
 
   function resetForm() { setBusca(''); setProdutoId(''); setCustomName(''); setQty(1) }
 
@@ -58,6 +123,19 @@ function ListaPage() {
   const totalEconomia = economia.reduce((sum, e) => sum + (e.totalItem ?? 0), 0)
   const totalLista = pendentes.reduce((sum, i) => i.bestPrice != null ? sum + i.bestPrice * (i.quantity ?? 1) : sum, 0)
   const temPrecos = pendentes.some(i => i.bestPrice != null)
+
+  function compartilharWhatsApp() {
+    const linhas = itens
+      .filter(i => !i.checked)
+      .map(i => {
+        const nome = i.productName ?? i.customName ?? 'Item'
+        const qtd = i.quantity && i.quantity > 1 ? `${i.quantity}x ` : ''
+        const preco = i.bestPrice != null ? ` — ${fmt(i.bestPrice * (i.quantity ?? 1))}` : ''
+        return `${qtd}${nome}${preco}`
+      })
+    const texto = `🛒 *${listaNome}*\n${new Date().toLocaleDateString('pt-BR')}\n\n${linhas.map(l => `• ${l}`).join('\n')}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank')
+  }
 
   function imprimir() {
     const win = window.open('', '_blank')
@@ -71,10 +149,10 @@ function ListaPage() {
       return `<tr><td>${check}</td><td>${cat}</td><td>${nome}${marca}</td><td>${qtd}</td></tr>`
     }).join('')
     win.document.write(`
-      <html><head><title>Lista de Compras</title>
+      <html><head><title>${listaNome}</title>
       <style>body{font-family:sans-serif;padding:2rem}h1{font-size:1.25rem}table{width:100%;border-collapse:collapse}td{padding:0.4rem 0.5rem;border-bottom:1px solid #eee;font-size:0.9rem}</style>
       </head><body>
-      <h1>🛒 Lista de Compras — ${new Date().toLocaleDateString('pt-BR')}</h1>
+      <h1>🛒 ${listaNome} — ${new Date().toLocaleDateString('pt-BR')}</h1>
       <table>${linhas}</table>
       </body></html>
     `)
@@ -85,16 +163,37 @@ function ListaPage() {
     <div style={{ maxWidth: '700px' }}>
       <div className="page-header">
         <div>
-          <h1 className="page-title">Lista de Compras</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+            <h1 className="page-title">{listaNome}</h1>
+            <button className="btn btn-ghost btn-sm" onClick={() => setModalListas(true)} style={{ color: 'var(--color-text-soft)' }}>
+              <List size={15} />
+            </button>
+          </div>
           <p style={{ color: 'var(--color-text-soft)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
             {pendentes.length} item{pendentes.length !== 1 ? 'ns' : ''} pendente{pendentes.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button className="btn btn-secondary" onClick={compartilharWhatsApp} disabled={pendentes.length === 0}><Share2 size={15} /> WhatsApp</button>
           <button className="btn btn-secondary" onClick={imprimir}><Printer size={15} /> Imprimir</button>
           <button className="btn btn-primary" onClick={() => setModal(true)}><Plus size={15} /> Adicionar</button>
         </div>
       </div>
+
+      {/* Seletor rápido de listas */}
+      {listas.length > 1 && (
+        <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          {listas.map(l => (
+            <button
+              key={l.id}
+              className={`btn btn-sm ${l.id === listaId ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setListaAtualId(l.id)}
+            >
+              {l.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="tab-bar">
@@ -118,17 +217,28 @@ function ListaPage() {
           </div>
         ) : (
           <div>
-            {/* Pendentes */}
             {pendentes.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                {pendentes.map(item => (
+                {pendentes.map(item => {
+                  const alertPrice = item.alertPrice != null ? Number(item.alertPrice) : null
+                  const alertAtivo = alertPrice !== null
+                  const alertDisparado = alertAtivo && item.bestPrice != null && item.bestPrice <= alertPrice
+                  return (
                   <div key={item.id} className="checkbox-item" onClick={() => toggle.mutate({ id: item.id, checked: true })}>
                     <input type="checkbox" checked={false} onChange={() => {}} onClick={e => e.stopPropagation()} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.375rem', flexWrap: 'wrap' }}>
                         {item.productName ?? item.customName ?? '—'}
                         {item.quantity && item.quantity > 1 && (
-                          <span className="badge badge-blue" style={{ marginLeft: '0.5rem' }}>×{item.quantity}</span>
+                          <span className="badge badge-blue">×{item.quantity}</span>
+                        )}
+                        {alertDisparado && (
+                          <span className="badge badge-green" style={{ fontSize: '0.65rem' }}>🔔 Preço atingido!</span>
+                        )}
+                        {alertAtivo && !alertDisparado && (
+                          <span className="badge" style={{ fontSize: '0.65rem', background: 'var(--color-warning)', color: '#78350f' }}>
+                            alerta {fmt(alertPrice!)}
+                          </span>
                         )}
                       </div>
                       {(item.productBrand || item.categoryName || item.bestSupermarket) && (
@@ -138,30 +248,104 @@ function ListaPage() {
                       )}
                     </div>
                     {item.bestPrice != null && (
-                      <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-primary)', flexShrink: 0, marginRight: '0.25rem' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: alertDisparado ? 'var(--color-primary)' : 'var(--color-text)', flexShrink: 0, marginRight: '0.25rem' }}>
                         {item.quantity && item.quantity > 1
                           ? `${fmt(item.bestPrice * item.quantity)} (${fmt(item.bestPrice)} un)`
                           : fmt(item.bestPrice)}
                       </span>
+                    )}
+                    {item.productId && (
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: alertDisparado ? 'var(--color-primary)' : alertAtivo ? 'var(--color-warning)' : 'var(--color-text-soft)' }}
+                        title={alertAtivo ? `Alerta: ${fmt(alertPrice!)}` : 'Definir alerta de preço'}
+                        onClick={e => {
+                          e.stopPropagation()
+                          setAlertInput(alertPrice !== null ? String(alertPrice) : '')
+                          setAlertModal({ id: item.id, name: item.productName ?? item.customName ?? 'Item', current: alertPrice })
+                        }}>
+                        {alertAtivo ? <Bell size={14} /> : <BellOff size={14} />}
+                      </button>
                     )}
                     <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)' }}
                       onClick={e => { e.stopPropagation(); remover.mutate(item.id) }}>
                       <Trash2 size={14} />
                     </button>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             )}
 
-            {/* Total estimado */}
             {temPrecos && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.875rem 1rem', background: 'var(--color-primary-bg)', border: '1px solid #86efac', borderRadius: '0.75rem', marginBottom: '1.5rem' }}>
-                <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-primary)' }}>Total estimado (menor preço)</span>
-                <span style={{ fontWeight: 800, fontSize: '1.125rem' }}>{fmt(totalLista)}</span>
+              <div style={{ padding: '0.875rem 1rem', background: 'var(--color-primary-bg)', border: '1px solid #86efac', borderRadius: '0.75rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-primary)' }}>Total estimado (menor preço)</span>
+                  <span style={{ fontWeight: 800, fontSize: '1.125rem' }}>{fmt(totalLista)}</span>
+                </div>
+                {budget !== null && (
+                  <div style={{ marginTop: '0.625rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--color-text-soft)', marginBottom: '0.3rem' }}>
+                      <span>Orçamento mensal</span>
+                      <span style={{ fontWeight: 600, color: totalLista > budget ? 'var(--color-danger)' : 'var(--color-text)' }}>
+                        {fmt(totalLista)} / {fmt(budget)}
+                      </span>
+                    </div>
+                    <div style={{ height: '6px', borderRadius: '3px', background: 'var(--color-border)', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${Math.min(100, (totalLista / budget) * 100).toFixed(1)}%`,
+                        background: totalLista > budget ? 'var(--color-danger)' : totalLista / budget > 0.8 ? 'var(--color-warning)' : 'var(--color-primary)',
+                        borderRadius: '3px',
+                        transition: 'width 0.4s',
+                      }} />
+                    </div>
+                  </div>
+                )}
+                {budget === null && (
+                  <button className="btn btn-ghost btn-sm" style={{ marginTop: '0.375rem', fontSize: '0.8rem', color: 'var(--color-text-soft)' }}
+                    onClick={() => { setOrcamentoInput(''); setEditandoOrcamento(true) }}>
+                    <Wallet size={12} /> Definir orçamento mensal
+                  </button>
+                )}
+                {budget !== null && !editandoOrcamento && (
+                  <button className="btn btn-ghost btn-sm" style={{ marginTop: '0.375rem', fontSize: '0.8rem', color: 'var(--color-text-soft)' }}
+                    onClick={() => { setOrcamentoInput(String(budget)); setEditandoOrcamento(true) }}>
+                    <Wallet size={12} /> Editar orçamento
+                  </button>
+                )}
+                {editandoOrcamento && (
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.625rem', alignItems: 'center' }}>
+                    <input
+                      className="input"
+                      type="number"
+                      min="0"
+                      step="10"
+                      placeholder="Ex: 500"
+                      value={orcamentoInput}
+                      onChange={e => setOrcamentoInput(e.target.value)}
+                      style={{ height: '2rem', fontSize: '0.85rem', padding: '0 0.625rem' }}
+                      autoFocus
+                    />
+                    <button className="btn btn-primary btn-sm"
+                      disabled={!orcamentoInput || salvarOrcamento.isPending}
+                      onClick={() => salvarOrcamento.mutate(parseFloat(orcamentoInput))}>
+                      <Check size={13} />
+                    </button>
+                    {budget !== null && (
+                      <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)' }}
+                        onClick={() => salvarOrcamento.mutate(null)}>
+                        <X size={13} />
+                      </button>
+                    )}
+                    <button className="btn btn-ghost btn-sm" onClick={() => setEditandoOrcamento(false)}>
+                      Cancelar
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Marcados */}
             {marcados.length > 0 && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
@@ -218,11 +402,7 @@ function ListaPage() {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Produto</th>
-                    <th>Qtd</th>
-                    <th>Menor preço</th>
-                    <th>Mercado</th>
-                    <th style={{ textAlign: 'right' }}>Total</th>
+                    <th>Produto</th><th>Qtd</th><th>Menor preço</th><th>Mercado</th><th style={{ textAlign: 'right' }}>Total</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -242,20 +422,137 @@ function ListaPage() {
         )
       )}
 
-      {/* Modal adicionar */}
+      {/* Modal Alerta de Preço */}
+      {alertModal && (
+        <div className="modal-overlay" onClick={() => { setAlertModal(null); setAlertInput('') }}>
+          <div className="modal" style={{ maxWidth: '360px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ fontWeight: 700 }}>Alerta de preço</h3>
+              <button className="btn btn-ghost btn-sm" onClick={() => { setAlertModal(null); setAlertInput('') }}><X size={18} /></button>
+            </div>
+            <div className="modal-body">
+              <p style={{ fontSize: '0.875rem', marginBottom: '0.75rem', color: 'var(--color-text-soft)' }}>
+                Avise quando <strong style={{ color: 'var(--color-text)' }}>{alertModal.name}</strong> atingir este preço:
+              </p>
+              <div className="form-group">
+                <label className="label">Preço alvo (R$)</label>
+                <input
+                  className="input"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="Ex: 9,99"
+                  value={alertInput}
+                  onChange={e => setAlertInput(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              {alertModal.current !== null && (
+                <p style={{ fontSize: '0.8rem', color: 'var(--color-text-soft)' }}>
+                  Alerta atual: <strong>{fmt(alertModal.current)}</strong>
+                </p>
+              )}
+            </div>
+            <div className="modal-footer" style={{ gap: '0.5rem' }}>
+              {alertModal.current !== null && (
+                <button className="btn btn-ghost" style={{ color: 'var(--color-danger)', marginRight: 'auto' }}
+                  onClick={() => salvarAlerta.mutate({ id: alertModal.id, alertPrice: null })}
+                  disabled={salvarAlerta.isPending}>
+                  <BellOff size={14} /> Remover alerta
+                </button>
+              )}
+              <button className="btn btn-secondary" onClick={() => { setAlertModal(null); setAlertInput('') }}>Cancelar</button>
+              <button className="btn btn-primary"
+                disabled={!alertInput || isNaN(parseFloat(alertInput)) || salvarAlerta.isPending}
+                onClick={() => salvarAlerta.mutate({ id: alertModal.id, alertPrice: parseFloat(alertInput) })}>
+                {salvarAlerta.isPending ? 'Salvando...' : 'Salvar alerta'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Gerenciar Listas */}
+      {modalListas && (
+        <div className="modal-overlay" onClick={() => setModalListas(false)}>
+          <div className="modal" style={{ maxWidth: '420px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ fontWeight: 700 }}>Minhas listas</h3>
+              <button className="btn btn-ghost btn-sm" onClick={() => setModalListas(false)}><X size={18} /></button>
+            </div>
+            <div className="modal-body">
+              {listas.map(l => (
+                <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.5rem 0' }}>
+                  {renomeando?.id === l.id ? (
+                    <input
+                      className="input"
+                      style={{ flex: 1 }}
+                      value={renomeando.name}
+                      onChange={e => setRenomeando(r => r && ({ ...r, name: e.target.value }))}
+                      autoFocus
+                    />
+                  ) : (
+                    <span style={{ flex: 1, fontWeight: l.id === listaId ? 700 : 400, cursor: 'pointer' }}
+                      onClick={() => { setListaAtualId(l.id); setModalListas(false) }}>
+                      {l.isDefault && <span className="badge badge-green" style={{ marginRight: '0.375rem', fontSize: '0.65rem' }}>padrão</span>}
+                      {l.name}
+                    </span>
+                  )}
+                  {renomeando?.id === l.id ? (
+                    <button className="btn btn-primary btn-sm"
+                      onClick={() => renomear.mutate({ id: l.id, name: renomeando.name })}
+                      disabled={renomear.isPending}>
+                      <Check size={13} />
+                    </button>
+                  ) : (
+                    <button className="btn btn-ghost btn-sm" onClick={() => setRenomeando({ id: l.id, name: l.name })}>
+                      <Pencil size={13} />
+                    </button>
+                  )}
+                  {!l.isDefault && (
+                    <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)' }}
+                      onClick={() => { if (confirm(`Excluir "${l.name}"? Os itens da lista serão apagados.`)) deletarLista.mutate(l.id) }}
+                      disabled={deletarLista.isPending}>
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                <p style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.5rem' }}>Criar nova lista</p>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input className="input" placeholder="Nome da lista..." value={novaLista} onChange={e => setNovaLista(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && novaLista.trim() && criarNova.mutate(novaLista.trim())} />
+                  <button className="btn btn-primary" onClick={() => criarNova.mutate(novaLista.trim())}
+                    disabled={!novaLista.trim() || criarNova.isPending}>
+                    <Plus size={15} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal adicionar item */}
       {modal && (
         <div className="modal-overlay" onClick={() => { setModal(false); resetForm() }}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3 style={{ fontWeight: 700 }}>Adicionar item</h3>
-              <button className="btn btn-ghost btn-sm" onClick={() => { setModal(false); resetForm() }}><X size={18} /></button>
+              <div style={{ display: 'flex', gap: '0.25rem' }}>
+                <button className="btn btn-ghost btn-sm" title="Escanear código de barras"
+                  onClick={() => { setScanMsg(''); setScannerAberto(true) }}>
+                  <Camera size={18} />
+                </button>
+                <button className="btn btn-ghost btn-sm" onClick={() => { setModal(false); resetForm() }}><X size={18} /></button>
+              </div>
             </div>
             <div className="modal-body">
               <div className="tab-bar" style={{ marginBottom: '1rem' }}>
-                <button className={`tab${!customName && !produtoId ? ' active' : produtoId ? ' active' : ''}`}
-                  onClick={() => setCustomName('')}>Do catálogo</button>
-                <button className={`tab${customName ? ' active' : ''}`}
-                  onClick={() => setProdutoId('')}>Item livre</button>
+                <button className={`tab${!customName ? ' active' : ''}`} onClick={() => setCustomName('')}>Do catálogo</button>
+                <button className={`tab${customName ? ' active' : ''}`} onClick={() => setProdutoId('')}>Item livre</button>
               </div>
 
               {!customName ? (
@@ -272,7 +569,7 @@ function ListaPage() {
                             onClick={() => { setProdutoId(p.id); setBusca(p.name + (p.brand ? ` (${p.brand})` : '')) }}
                             style={{
                               padding: '0.625rem 0.875rem', cursor: 'pointer', fontSize: '0.875rem',
-                              background: produtoId === p.id ? 'var(--color-primary-bg)' : 'white',
+                              background: produtoId === p.id ? 'var(--color-primary-bg)' : 'var(--color-surface)',
                               color: produtoId === p.id ? 'var(--color-primary)' : 'var(--color-text)',
                               borderBottom: '1px solid var(--color-border)',
                               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem',
@@ -326,6 +623,121 @@ function ListaPage() {
           </div>
         </div>
       )}
+
+      {/* Modal Scanner de código de barras */}
+      {scannerAberto && (
+        <BarcodeScannerModal
+          msg={scanMsg}
+          onClose={() => setScannerAberto(false)}
+          onScan={async (barcode) => {
+            setScanMsg(`Código: ${barcode} — buscando...`)
+            const produto = await buscarProdutoPorCodigoBarras({ data: { barcode } })
+            if (produto) {
+              setProdutoId(produto.id)
+              setBusca(produto.name + (produto.brand ? ` (${produto.brand})` : ''))
+              setScannerAberto(false)
+              setScanMsg('')
+            } else {
+              setScanMsg(`Código ${barcode} não encontrado no catálogo.`)
+            }
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+interface BarcodeScannerModalProps {
+  onClose: () => void
+  onScan: (barcode: string) => void
+  msg: string
+}
+
+function BarcodeScannerModal({ onClose, onScan, msg }: BarcodeScannerModalProps) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [error, setError] = useState('')
+  const [scanning, setScanning] = useState(true)
+
+  useEffect(() => {
+    if (!('BarcodeDetector' in window)) {
+      setError('BarcodeDetector não é suportado neste navegador. Use Chrome/Edge em Android ou desktop.')
+      return
+    }
+
+    let stream: MediaStream | null = null
+    let animFrame: number
+    let scanned = false
+
+    const detector = new (window as any).BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'qr_code', 'upc_a', 'upc_e'] })
+
+    const start = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          videoRef.current.play()
+        }
+        scan()
+      } catch {
+        setError('Permissão de câmera negada ou câmera não disponível.')
+      }
+    }
+
+    const scan = async () => {
+      if (!videoRef.current || scanned) return
+      try {
+        const codes = await detector.detect(videoRef.current)
+        if (codes.length > 0 && !scanned) {
+          scanned = true
+          setScanning(false)
+          onScan(codes[0].rawValue)
+        }
+      } catch {}
+      if (!scanned) animFrame = requestAnimationFrame(scan)
+    }
+
+    start()
+
+    return () => {
+      cancelAnimationFrame(animFrame)
+      stream?.getTracks().forEach(t => t.stop())
+    }
+  }, [])
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: '420px' }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3 style={{ fontWeight: 700 }}>Escanear código de barras</h3>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}><X size={18} /></button>
+        </div>
+        <div className="modal-body" style={{ padding: '1rem' }}>
+          {error ? (
+            <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--color-danger)', fontSize: '0.875rem' }}>
+              {error}
+            </div>
+          ) : (
+            <div style={{ position: 'relative', borderRadius: '0.75rem', overflow: 'hidden', background: '#000' }}>
+              <video ref={videoRef} style={{ width: '100%', display: 'block', maxHeight: '280px', objectFit: 'cover' }} muted playsInline />
+              <div style={{
+                position: 'absolute', top: '50%', left: '10%', right: '10%', height: '2px',
+                transform: 'translateY(-50%)', background: 'rgba(22,163,74,0.8)',
+                boxShadow: '0 0 8px rgba(22,163,74,0.6)',
+              }} />
+            </div>
+          )}
+          {msg && (
+            <p style={{ marginTop: '0.75rem', fontSize: '0.875rem', textAlign: 'center', color: msg.includes('não encontrado') ? 'var(--color-danger)' : 'var(--color-primary)', fontWeight: 500 }}>
+              {msg}
+            </p>
+          )}
+          {!error && scanning && !msg && (
+            <p style={{ marginTop: '0.75rem', fontSize: '0.8125rem', textAlign: 'center', color: 'var(--color-text-soft)' }}>
+              Aponte a câmera para o código de barras do produto
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

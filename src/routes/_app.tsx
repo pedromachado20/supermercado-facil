@@ -1,42 +1,66 @@
 import { createFileRoute, Outlet, Link, redirect, useRouterState } from '@tanstack/react-router'
 import { signOut } from '#/lib/auth-client'
 import { createServerFn } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
 import { auth } from '#/lib/auth'
 import { useQuery } from '@tanstack/react-query'
 import {
   Store, Package, Tag, UploadCloud,
   LayoutDashboard, BarChart2, LogOut, ChefHat,
-  Menu, X, ShoppingBag, ShoppingCart
+  Menu, X, ShoppingBag, ShoppingCart, Sun, Moon
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-const getSession = createServerFn({ method: 'GET' }).handler(async ({ request }) => {
+const getSession = createServerFn({ method: 'GET' }).handler(async () => {
+  const request = getRequest()
   const s = await auth.api.getSession({ headers: request.headers })
   return s ? { name: s.user.name, email: s.user.email } : null
 })
 
+const checkAuth = createServerFn({ method: 'GET' }).handler(async () => {
+  const request = getRequest()
+  const s = await auth.api.getSession({ headers: request.headers })
+  if (!s) throw redirect({ to: '/login' })
+  return null
+})
+
 export const Route = createFileRoute('/_app')({
-  beforeLoad: async ({ context }) => {
-    // Auth check via server context (melhor-auth)
+  beforeLoad: async () => {
+    await checkAuth()
   },
   component: AppLayout,
 })
 
 const NAV = [
-  { to: '/',           label: 'Dashboard',      icon: LayoutDashboard },
-  { to: '/mercados',   label: 'Supermercados',  icon: Store },
-  { to: '/produtos',   label: 'Produtos',       icon: Package },
-  { to: '/categorias', label: 'Categorias',     icon: Tag },
-  { to: '/lista',      label: 'Lista de Compras', icon: ShoppingCart },
-  { to: '/importar',   label: 'Importar Dados', icon: UploadCloud },
-  { to: '/receitas',   label: 'Receitas',       icon: ChefHat },
-  { to: '/relatorios', label: 'Relatórios',     icon: BarChart2 },
+  { to: '/',           label: 'Dashboard',       icon: LayoutDashboard },
+  { to: '/mercados',   label: 'Supermercados',   icon: Store },
+  { to: '/produtos',   label: 'Produtos',        icon: Package },
+  { to: '/categorias', label: 'Categorias',      icon: Tag },
+  { to: '/lista',      label: 'Lista de Compras',icon: ShoppingCart },
+  { to: '/importar',   label: 'Importar Dados',  icon: UploadCloud },
+  { to: '/receitas',   label: 'Receitas',        icon: ChefHat },
+  { to: '/relatorios', label: 'Relatórios',      icon: BarChart2 },
 ]
+
+function useDarkMode() {
+  const [dark, setDark] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('theme') === 'dark'
+  })
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+    localStorage.setItem('theme', dark ? 'dark' : 'light')
+  }, [dark])
+
+  return [dark, setDark] as const
+}
 
 function Sidebar({ onClose }: { onClose?: () => void }) {
   const { data: session } = useQuery({ queryKey: ['session'], queryFn: () => getSession(), staleTime: 60_000 })
   const routerState = useRouterState()
   const path = routerState.location.pathname
+  const [dark, setDark] = useDarkMode()
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1.25rem 0.75rem' }}>
@@ -73,7 +97,7 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
         })}
       </nav>
 
-      {/* User + Sair */}
+      {/* User + Dark mode + Sair */}
       <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginTop: '1rem' }}>
         {session && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0 0.5rem 0.75rem' }}>
@@ -93,6 +117,14 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
                 {session.email}
               </div>
             </div>
+            <button
+              className="btn btn-ghost btn-sm tooltip"
+              data-tip={dark ? 'Modo claro' : 'Modo escuro'}
+              onClick={() => setDark(d => !d)}
+              style={{ flexShrink: 0, padding: '0.3rem' }}
+            >
+              {dark ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
           </div>
         )}
         <button

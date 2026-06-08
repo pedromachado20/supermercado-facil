@@ -31,11 +31,14 @@ function Dashboard() {
     { to: '/mercados', label: 'Mercados', desc: 'Gerenciar mercados', icon: Store, color: '#9333ea' },
   ]
 
+  const hora = new Date().getHours()
+  const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite'
+
   return (
     <div style={{ maxWidth: '960px' }}>
       <div className="page-header">
         <div>
-          <h1 className="page-title">Bom dia! 👋</h1>
+          <h1 className="page-title">{saudacao}! 👋</h1>
           <p style={{ color: 'var(--color-text-soft)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
             Compare preços e economize nas suas compras
           </p>

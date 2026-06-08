@@ -257,27 +257,32 @@ async function extrairDeArquivo(base64: string, mimeType: string, supermarketNam
 // que dependem de JS para exibir produtos.
 // Requer: bunx playwright install chromium  (baixa ~300MB uma vez)
 
+const IS_VERCEL = !!(process.env.VERCEL || process.env.VERCEL_ENV)
+
 async function fetchPageContent(url: string): Promise<string> {
-  try {
-    const { chromium } = await import('playwright')
-    const browser = await chromium.launch({ headless: true })
-    const page = await browser.newPage()
-    await page.setExtraHTTPHeaders({ 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' })
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 })
-    // Aguarda qualquer lazy-load de produtos
-    await page.waitForTimeout(2000)
-    const text = await page.evaluate(() => document.body.innerText)
-    await browser.close()
-    return text.slice(0, 40000)
-  } catch {
-    // Playwright não instalado ou falhou → fallback para fetch simples
-    const resp = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' },
-      signal: AbortSignal.timeout(30000),
-    })
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`)
-    return stripHtml(await resp.text())
+  if (!IS_VERCEL) {
+    try {
+      const { chromium } = await import('playwright')
+      const browser = await chromium.launch({ headless: true })
+      const page = await browser.newPage()
+      await page.setExtraHTTPHeaders({ 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' })
+      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 })
+      await page.waitForTimeout(2000)
+      const text = await page.evaluate(() => document.body.innerText)
+      await browser.close()
+      return text.slice(0, 40000)
+    } catch {
+      // Playwright não instalado ou falhou → cai no fetch abaixo
+    }
   }
+
+  // Fetch simples (funciona em Vercel e como fallback do Playwright)
+  const resp = await fetch(url, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' },
+    signal: AbortSignal.timeout(30000),
+  })
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`)
+  return stripHtml(await resp.text())
 }
 
 // ─── Persistência com deduplicação ────────────────────────────────────────────
@@ -406,7 +411,7 @@ async function salvarProdutos(
 export const verificarProvedores = createServerFn({ method: 'GET' }).handler(async () => ({
   gemini: hasGemini(),
   claude: hasClaude(),
-  playwright: await import('playwright').then(() => true).catch(() => false),
+  playwright: !IS_VERCEL && await import('playwright').then(() => true).catch(() => false),
 }))
 
 export const importarLink = createServerFn({ method: 'POST' })

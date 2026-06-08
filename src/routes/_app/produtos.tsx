@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listarProdutosComPrecos, atualizarProduto, excluirProduto, excluirProdutosEmLote, mesclarDuplicatas } from '#/server/functions/produtos'
+import { listarProdutosComPrecos, atualizarProduto, excluirProduto, excluirProdutosEmLote, mesclarDuplicatas, historicoPrecoProduto } from '#/server/functions/produtos'
 import { listarMercados } from '#/server/functions/mercados'
 import { listarCategorias } from '#/server/functions/categorias'
-import { Package, Search, Pencil, Trash2, X, Printer, ShoppingCart, GitMerge } from 'lucide-react'
+import { Package, Search, Pencil, Trash2, X, Printer, ShoppingCart, GitMerge, TrendingUp } from 'lucide-react'
 import { useState, useMemo } from 'react'
 
 export const Route = createFileRoute('/_app/produtos')({
@@ -25,14 +25,16 @@ type ProdutoRow = {
   supermarketName: string
   normalPrice: string | null
   normalEntryId: string | null
+  normalPricePerUnit: string | null
   promoPrice: string | null
   promoEntryId: string | null
+  promoPricePerUnit: string | null
 }
 
 // Retorna o melhor preço (promo se disponível) e o entryId correspondente
-function bestPrice(row: ProdutoRow): { price: string; entryId: string; isPromo: boolean } | null {
-  if (row.promoPrice && row.promoEntryId) return { price: row.promoPrice, entryId: row.promoEntryId, isPromo: true }
-  if (row.normalPrice && row.normalEntryId) return { price: row.normalPrice, entryId: row.normalEntryId, isPromo: false }
+function bestPrice(row: ProdutoRow): { price: string; entryId: string; isPromo: boolean; pricePerUnit: string | null } | null {
+  if (row.promoPrice && row.promoEntryId) return { price: row.promoPrice, entryId: row.promoEntryId, isPromo: true, pricePerUnit: row.promoPricePerUnit }
+  if (row.normalPrice && row.normalEntryId) return { price: row.normalPrice, entryId: row.normalEntryId, isPromo: false, pricePerUnit: row.normalPricePerUnit }
   return null
 }
 
@@ -45,6 +47,7 @@ function ProdutosPage() {
   const [quantidades, setQuantidades] = useState<Map<string, string>>(new Map())
   const [modalEditar, setModalEditar] = useState<{ productId: string; name: string; brand: string; categoryId: string; unit: string } | null>(null)
   const [confirmDel, setConfirmDel] = useState<ProdutoRow | null>(null)
+  const [modalHistorico, setModalHistorico] = useState<{ productId: string; name: string } | null>(null)
 
   function getQtd(id: string) {
     const v = quantidades.get(id)
@@ -377,9 +380,17 @@ function ProdutosPage() {
                                     )}
                                     <div style={{ fontWeight: 700, color: '#c2410c', fontSize: '0.875rem' }}>{fmt(best.price)}</div>
                                     <span style={{ display: 'inline-block', background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', borderRadius: '4px', padding: '1px 5px', fontSize: '0.65rem', fontWeight: 700 }}>PROMOÇÃO</span>
+                                    {best.pricePerUnit && (
+                                      <div style={{ fontSize: '0.7rem', color: 'var(--color-text-soft)', marginTop: '2px' }}>{fmt(best.pricePerUnit)}/{item.unit ?? 'un'}</div>
+                                    )}
                                   </div>
                                 ) : (
-                                  <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{fmt(best.price)}</span>
+                                  <div>
+                                    <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{fmt(best.price)}</span>
+                                    {best.pricePerUnit && (
+                                      <div style={{ fontSize: '0.7rem', color: 'var(--color-text-soft)', marginTop: '2px' }}>{fmt(best.pricePerUnit)}/{item.unit ?? 'un'}</div>
+                                    )}
+                                  </div>
                                 )}
                               </td>
                               <td>
@@ -402,6 +413,13 @@ function ProdutosPage() {
                               </td>
                               <td>
                                 <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end' }}>
+                                  <button
+                                    className="btn btn-ghost btn-sm"
+                                    title="Histórico de preços"
+                                    onClick={() => setModalHistorico({ productId: item.productId, name: item.name })}
+                                  >
+                                    <TrendingUp size={13} />
+                                  </button>
                                   <button
                                     className="btn btn-ghost btn-sm"
                                     title="Alterar"
@@ -475,6 +493,15 @@ function ProdutosPage() {
         </div>
       )}
 
+      {/* Modal Histórico de Preços */}
+      {modalHistorico && (
+        <ModalHistorico
+          productId={modalHistorico.productId}
+          name={modalHistorico.name}
+          onClose={() => setModalHistorico(null)}
+        />
+      )}
+
       {/* Confirm Delete */}
       {confirmDel && (
         <div className="modal-overlay" onClick={() => setConfirmDel(null)}>
@@ -495,6 +522,184 @@ function ProdutosPage() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// ─── Modal Histórico de Preços ────────────────────────────────────────────────
+
+type HistoricoEntry = Awaited<ReturnType<typeof historicoPrecoProduto>>[number]
+
+function PriceChart({ entries }: { entries: HistoricoEntry[] }) {
+  if (entries.length < 2) return (
+    <p style={{ color: 'var(--color-text-soft)', fontSize: '0.875rem', textAlign: 'center', padding: '1.5rem 0' }}>
+      Pelo menos 2 registros são necessários para exibir o gráfico.
+    </p>
+  )
+
+  const W = 480, H = 160, PAD = { t: 16, r: 16, b: 32, l: 56 }
+  const cW = W - PAD.l - PAD.r
+  const cH = H - PAD.t - PAD.b
+
+  const prices = entries.map(e => Number(e.price))
+  const minP = Math.min(...prices), maxP = Math.max(...prices)
+  const range = maxP - minP || 1
+
+  const dates = entries.map(e => new Date(e.createdAt).getTime())
+  const minD = Math.min(...dates), maxD = Math.max(...dates)
+  const rangeD = maxD - minD || 1
+
+  const points = entries.map((e, i) => {
+    const x = PAD.l + ((new Date(e.createdAt).getTime() - minD) / rangeD) * cW
+    const y = PAD.t + cH - ((Number(e.price) - minP) / range) * cH
+    return { x, y, entry: e, i }
+  })
+
+  const polyline = points.map(p => `${p.x},${p.y}`).join(' ')
+
+  const yTicks = 4
+  const yLabels = Array.from({ length: yTicks + 1 }, (_, i) => {
+    const val = minP + (range * i) / yTicks
+    return { val, y: PAD.t + cH - (i / yTicks) * cH }
+  })
+
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block', overflow: 'visible' }}>
+      {/* Grid lines */}
+      {yLabels.map(({ val, y }) => (
+        <g key={val}>
+          <line x1={PAD.l} y1={y} x2={W - PAD.r} y2={y} stroke="var(--color-border)" strokeWidth="1" />
+          <text x={PAD.l - 6} y={y + 4} textAnchor="end" fontSize="10" fill="var(--color-text-soft)">
+            {val.toFixed(2).replace('.', ',')}
+          </text>
+        </g>
+      ))}
+
+      {/* Area fill */}
+      <defs>
+        <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.2" />
+          <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon
+        points={`${PAD.l},${PAD.t + cH} ${polyline} ${W - PAD.r},${PAD.t + cH}`}
+        fill="url(#priceGrad)"
+      />
+
+      {/* Line */}
+      <polyline points={polyline} fill="none" stroke="var(--color-primary)" strokeWidth="2" strokeLinejoin="round" />
+
+      {/* Dots + tooltip trigger */}
+      {points.map(({ x, y, entry }) => (
+        <g key={entry.id}>
+          <circle cx={x} cy={y} r="4" fill="var(--color-primary)" stroke="white" strokeWidth="2" />
+          <title>{`${entry.supermarketName}\n${new Date(entry.createdAt).toLocaleDateString('pt-BR')}\nR$ ${Number(entry.price).toFixed(2).replace('.', ',')}${entry.isPromo ? ' (promo)' : ''}`}</title>
+        </g>
+      ))}
+
+      {/* X axis labels (first and last) */}
+      {[points[0], points[points.length - 1]].map((p, i) => (
+        <text key={i} x={p.x} y={H - 6} textAnchor={i === 0 ? 'start' : 'end'} fontSize="10" fill="var(--color-text-soft)">
+          {new Date(p.entry.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+        </text>
+      ))}
+    </svg>
+  )
+}
+
+function ModalHistorico({ productId, name, onClose }: { productId: string; name: string; onClose: () => void }) {
+  const { data: historico = [], isLoading } = useQuery({
+    queryKey: ['historico', productId],
+    queryFn: () => historicoPrecoProduto({ data: { productId } }),
+  })
+
+  const mercados = useMemo(() => {
+    const map = new Map<string, HistoricoEntry[]>()
+    for (const e of historico) {
+      if (!map.has(e.supermarketId)) map.set(e.supermarketId, [])
+      map.get(e.supermarketId)!.push(e)
+    }
+    return Array.from(map.entries()).map(([, entries]) => ({ name: entries[0].supermarketName, entries }))
+  }, [historico])
+
+  const [mercSel, setMercSel] = useState<string | 'todos'>('todos')
+
+  const entriesFiltradas = mercSel === 'todos'
+    ? historico
+    : historico.filter(e => e.supermarketId === mercSel)
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <h3 style={{ fontWeight: 700 }}>Histórico de preços</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--color-text-soft)', marginTop: '0.125rem' }}>{name}</p>
+          </div>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}><X size={18} /></button>
+        </div>
+        <div className="modal-body">
+          {isLoading ? (
+            <div className="empty-state"><div className="spinner" /></div>
+          ) : historico.length === 0 ? (
+            <div className="empty-state">
+              <TrendingUp size={36} color="var(--color-text-soft)" />
+              <p>Nenhum histórico de preço encontrado.</p>
+            </div>
+          ) : (
+            <>
+              {mercados.length > 1 && (
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                  <button className={`btn btn-sm ${mercSel === 'todos' ? 'btn-primary' : 'btn-secondary'}`}
+                    onClick={() => setMercSel('todos')}>Todos</button>
+                  {mercados.map(m => (
+                    <button key={m.name} className={`btn btn-sm ${mercSel === m.name ? 'btn-primary' : 'btn-secondary'}`}
+                      onClick={() => setMercSel(m.entries[0].supermarketId)}>
+                      {m.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <PriceChart entries={entriesFiltradas} />
+
+              <div style={{ marginTop: '1rem', maxHeight: '220px', overflowY: 'auto' }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Supermercado</th>
+                      <th style={{ textAlign: 'right' }}>Preço</th>
+                      <th style={{ textAlign: 'center' }}>Tipo</th>
+                      <th>Origem</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...entriesFiltradas].reverse().map(e => (
+                      <tr key={e.id}>
+                        <td style={{ fontSize: '0.8125rem' }}>{new Date(e.createdAt).toLocaleDateString('pt-BR')}</td>
+                        <td style={{ fontSize: '0.8125rem' }}>{e.supermarketName}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 700, color: e.isPromo ? '#c2410c' : 'var(--color-primary)' }}>
+                          {fmt(e.price)}
+                          {e.isPromo && <span style={{ marginLeft: '0.3rem', fontSize: '0.65rem', background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', borderRadius: '4px', padding: '1px 4px', fontWeight: 700 }}>PROMO</span>}
+                        </td>
+                        <td style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--color-text-soft)', textTransform: 'capitalize' }}>{e.sourceType}</td>
+                        <td style={{ fontSize: '0.75rem', color: 'var(--color-text-soft)' }}>
+                          {e.pricePerUnit ? `${fmt(e.pricePerUnit)}/un` : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Fechar</button>
+        </div>
+      </div>
     </div>
   )
 }

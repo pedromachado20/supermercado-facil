@@ -1,6 +1,14 @@
 {
-  "short_name": "TanStack App",
-  "name": "Create TanStack App Sample",
+  "name": "Supermercado Fácil",
+  "short_name": "Supermercado",
+  "description": "Compare preços e economize nas suas compras de supermercado",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#16a34a",
+  "background_color": "#ffffff",
+  "lang": "pt-BR",
+  "categories": ["food", "shopping", "lifestyle"],
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +18,26 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "shortcuts": [
+    {
+      "name": "Lista de Compras",
+      "url": "/lista",
+      "description": "Abrir lista de compras"
+    },
+    {
+      "name": "Importar Encarte",
+      "url": "/importar",
+      "description": "Importar encarte de supermercado"
+    }
+  ]
 }

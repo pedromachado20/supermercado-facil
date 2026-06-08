@@ -190,6 +190,41 @@ export const mesclarDuplicatas = createServerFn({ method: 'POST' })
     return { ok: true, merged }
   })
 
+export const buscarProdutoPorCodigoBarras = createServerFn({ method: 'POST' })
+  .inputValidator((d: { barcode: string }) => d)
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    const [produto] = await db.select({
+      id: products.id, name: products.name, brand: products.brand, unit: products.unit,
+    })
+      .from(products)
+      .where(and(eq(products.userId, userId), eq(products.barcode, data.barcode)))
+      .limit(1)
+    return produto ?? null
+  })
+
+export const historicoPrecoProduto = createServerFn({ method: 'POST' })
+  .inputValidator((d: { productId: string }) => d)
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    const entries = await db.select({
+      id: priceEntries.id,
+      price: priceEntries.price,
+      pricePerUnit: priceEntries.pricePerUnit,
+      isPromo: priceEntries.isPromo,
+      sourceType: priceEntries.sourceType,
+      createdAt: priceEntries.createdAt,
+      supermarketId: priceEntries.supermarketId,
+      supermarketName: supermarkets.name,
+    })
+      .from(priceEntries)
+      .innerJoin(products, eq(priceEntries.productId, products.id))
+      .innerJoin(supermarkets, eq(priceEntries.supermarketId, supermarkets.id))
+      .where(and(eq(priceEntries.productId, data.productId), eq(products.userId, userId)))
+      .orderBy(priceEntries.createdAt)
+    return entries
+  })
+
 export const listarProdutosComPrecos = createServerFn({ method: 'POST' })
   .inputValidator((d: { busca?: string; categoriaId?: string; supermarketId?: string }) => d)
   .handler(async ({ data, request }) => {
@@ -207,6 +242,7 @@ export const listarProdutosComPrecos = createServerFn({ method: 'POST' })
       categoryId: products.categoryId,
       categoryName: categories.name,
       price: priceEntries.price,
+      pricePerUnit: priceEntries.pricePerUnit,
       isPromo: priceEntries.isPromo,
       supermarketId: priceEntries.supermarketId,
       supermarketName: supermarkets.name,
@@ -224,8 +260,8 @@ export const listarProdutosComPrecos = createServerFn({ method: 'POST' })
       productId: string; name: string; brand: string | null; unit: string | null
       categoryId: string | null; categoryName: string | null
       supermarketId: string; supermarketName: string
-      normalPrice: string | null; normalEntryId: string | null
-      promoPrice: string | null; promoEntryId: string | null
+      normalPrice: string | null; normalEntryId: string | null; normalPricePerUnit: string | null
+      promoPrice: string | null; promoEntryId: string | null; promoPricePerUnit: string | null
       normalCreatedAt: Date | null; promoCreatedAt: Date | null
     }
     const map = new Map<string, Combined>()
@@ -237,19 +273,21 @@ export const listarProdutosComPrecos = createServerFn({ method: 'POST' })
           productId: row.productId, name: row.name, brand: row.brand, unit: row.unit,
           categoryId: row.categoryId, categoryName: row.categoryName,
           supermarketId: row.supermarketId, supermarketName: row.supermarketName,
-          normalPrice: null, normalEntryId: null, normalCreatedAt: null,
-          promoPrice: null, promoEntryId: null, promoCreatedAt: null,
+          normalPrice: null, normalEntryId: null, normalPricePerUnit: null, normalCreatedAt: null,
+          promoPrice: null, promoEntryId: null, promoPricePerUnit: null, promoCreatedAt: null,
         })
       }
       const entry = map.get(key)!
       const createdAt = new Date(row.priceCreatedAt)
       if (row.isPromo) {
         if (!entry.promoCreatedAt || createdAt > entry.promoCreatedAt) {
-          entry.promoPrice = row.price; entry.promoEntryId = row.priceEntryId; entry.promoCreatedAt = createdAt
+          entry.promoPrice = row.price; entry.promoEntryId = row.priceEntryId
+          entry.promoPricePerUnit = row.pricePerUnit; entry.promoCreatedAt = createdAt
         }
       } else {
         if (!entry.normalCreatedAt || createdAt > entry.normalCreatedAt) {
-          entry.normalPrice = row.price; entry.normalEntryId = row.priceEntryId; entry.normalCreatedAt = createdAt
+          entry.normalPrice = row.price; entry.normalEntryId = row.priceEntryId
+          entry.normalPricePerUnit = row.pricePerUnit; entry.normalCreatedAt = createdAt
         }
       }
     }

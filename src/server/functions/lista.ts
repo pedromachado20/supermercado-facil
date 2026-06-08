@@ -1,11 +1,65 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/db'
-import { shoppingListItems, products, priceEntries, supermarkets, categories } from '#/db/schema'
-import { eq, asc, and, sql } from 'drizzle-orm'
+import { shoppingListItems, shoppingLists, products, priceEntries, supermarkets, categories } from '#/db/schema'
+import { eq, asc, and, sql, desc } from 'drizzle-orm'
 import { requireUserId } from '#/server/get-user'
 
-export const listarItensLista = createServerFn({ method: 'GET' }).handler(async ({ request }) => {
+// ─── Gerenciamento de múltiplas listas ───────────────────────────────────────
+
+export const listarListas = createServerFn({ method: 'GET' }).handler(async ({ request }) => {
   const userId = await requireUserId(request)
+  return db.select().from(shoppingLists)
+    .where(eq(shoppingLists.userId, userId))
+    .orderBy(desc(shoppingLists.isDefault), asc(shoppingLists.createdAt))
+})
+
+export const criarLista = createServerFn({ method: 'POST' })
+  .inputValidator((d: { name: string }) => d)
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    const [lista] = await db.insert(shoppingLists)
+      .values({ userId, name: data.name, isDefault: false })
+      .returning()
+    return lista
+  })
+
+export const renomearLista = createServerFn({ method: 'POST' })
+  .inputValidator((d: { id: string; name: string }) => d)
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    await db.update(shoppingLists)
+      .set({ name: data.name })
+      .where(and(eq(shoppingLists.id, data.id), eq(shoppingLists.userId, userId)))
+    return { ok: true }
+  })
+
+export const excluirLista = createServerFn({ method: 'POST' })
+  .inputValidator((d: { id: string }) => d)
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    await db.delete(shoppingLists)
+      .where(and(eq(shoppingLists.id, data.id), eq(shoppingLists.userId, userId)))
+    return { ok: true }
+  })
+
+export const obterOuCriarListaDefault = createServerFn({ method: 'GET' }).handler(async ({ request }) => {
+  const userId = await requireUserId(request)
+  const existing = await db.select().from(shoppingLists)
+    .where(and(eq(shoppingLists.userId, userId), eq(shoppingLists.isDefault, true)))
+    .limit(1)
+  if (existing.length > 0) return existing[0]
+  const [lista] = await db.insert(shoppingLists)
+    .values({ userId, name: 'Minha Lista', isDefault: true })
+    .returning()
+  return lista
+})
+
+// ─── Itens de lista ───────────────────────────────────────────────────────────
+
+export const listarItensLista = createServerFn({ method: 'POST' })
+  .inputValidator((d: { listId?: string }) => d)
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
 
   // Passo 1: IDs de produtos do usuário que têm pelo menos um preço
   const comPreco = await db
@@ -15,11 +69,15 @@ export const listarItensLista = createServerFn({ method: 'GET' }).handler(async 
     .where(eq(products.userId, userId))
   const idsComPreco = comPreco.map(r => r.productId)
 
+  const baseWhere = data.listId
+    ? and(eq(shoppingListItems.userId, userId), eq(shoppingListItems.listId, data.listId))
+    : eq(shoppingListItems.userId, userId)
+
   // Passo 2: encontra itens inválidos (produto excluído ou sem preço)
   const todosItens = await db
     .select({ id: shoppingListItems.id, productId: shoppingListItems.productId })
     .from(shoppingListItems)
-    .where(eq(shoppingListItems.userId, userId))
+    .where(baseWhere)
 
   const invalidos = todosItens
     .filter(i => i.productId !== null && !idsComPreco.includes(i.productId))
@@ -34,8 +92,10 @@ export const listarItensLista = createServerFn({ method: 'GET' }).handler(async 
   // Passo 3: busca os itens válidos
   const items = await db.select({
     id: shoppingListItems.id, productId: shoppingListItems.productId,
+    listId: shoppingListItems.listId,
     customName: shoppingListItems.customName, quantity: shoppingListItems.quantity,
     unit: shoppingListItems.unit, checked: shoppingListItems.checked,
+    alertPrice: shoppingListItems.alertPrice,
     sortOrder: shoppingListItems.sortOrder,
     productName: products.name, productBrand: products.brand, productUnit: products.unit,
     categoryName: categories.name,
@@ -43,7 +103,7 @@ export const listarItensLista = createServerFn({ method: 'GET' }).handler(async 
     .from(shoppingListItems)
     .leftJoin(products, eq(shoppingListItems.productId, products.id))
     .leftJoin(categories, eq(products.categoryId, categories.id))
-    .where(eq(shoppingListItems.userId, userId))
+    .where(baseWhere)
     .orderBy(asc(shoppingListItems.sortOrder), asc(shoppingListItems.createdAt))
 
   // Passo 4: melhor preço + supermercado para cada produto
@@ -75,17 +135,28 @@ export const listarItensLista = createServerFn({ method: 'GET' }).handler(async 
 })
 
 export const adicionarItemLista = createServerFn({ method: 'POST' })
-  .inputValidator((d: { productId?: string; customName?: string; quantity?: number; unit?: string }) => d)
+  .inputValidator((d: { productId?: string; customName?: string; quantity?: number; unit?: string; listId?: string }) => d)
   .handler(async ({ data, request }) => {
     const userId = await requireUserId(request)
     const [item] = await db.insert(shoppingListItems).values({
       userId,
+      listId: data.listId || null,
       productId: data.productId || null,
       customName: data.customName || null,
       quantity: data.quantity ?? 1,
       unit: data.unit || null,
     }).returning()
     return item
+  })
+
+export const definirAlertaPreco = createServerFn({ method: 'POST' })
+  .inputValidator((d: { id: string; alertPrice: number | null }) => d)
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    await db.update(shoppingListItems)
+      .set({ alertPrice: data.alertPrice !== null ? String(data.alertPrice) : null })
+      .where(and(eq(shoppingListItems.id, data.id), eq(shoppingListItems.userId, userId)))
+    return { ok: true }
   })
 
 export const toggleItemLista = createServerFn({ method: 'POST' })

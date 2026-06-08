@@ -135,19 +135,37 @@ export const ingestionJobs = pgTable('ingestion_jobs', {
   completedAt: timestamp('completed_at'),
 })
 
-// ─── Lista de Compras ─────────────────────────────────────────────────────────
+// ─── Listas de Compras ────────────────────────────────────────────────────────
+
+export const shoppingLists = pgTable('shopping_lists', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull(),
+  name: text('name').notNull(),
+  isDefault: boolean('is_default').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
 
 export const shoppingListItems = pgTable('shopping_list_items', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   userId: text('user_id'),
+  listId: text('list_id').references(() => shoppingLists.id, { onDelete: 'cascade' }),
   productId: text('product_id').references(() => products.id),
   customName: text('custom_name'),
   quantity: integer('quantity').default(1).notNull(),
   unit: text('unit'),
   checked: boolean('checked').default(false).notNull(),
+  alertPrice: numeric('alert_price', { precision: 10, scale: 2 }),
   preferredSupermarketId: text('preferred_supermarket_id').references(() => supermarkets.id),
   sortOrder: integer('sort_order').default(0),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+// ─── Configurações do usuário ─────────────────────────────────────────────────
+
+export const userSettings = pgTable('user_settings', {
+  userId: text('user_id').primaryKey(),
+  monthlyBudget: numeric('monthly_budget', { precision: 10, scale: 2 }),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
 // ─── Receitas ─────────────────────────────────────────────────────────────────
