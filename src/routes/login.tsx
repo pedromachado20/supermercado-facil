@@ -45,7 +45,8 @@ function LoginPage() {
   }
 
   return (
-    <div style={{ width: '100%', maxWidth: '400px', padding: '1rem' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-surface-2)', padding: '1rem' }}>
+    <div style={{ width: '100%', maxWidth: '400px' }}>
       {/* Logo */}
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <div style={{
@@ -157,6 +158,7 @@ function LoginPage() {
           </Link>
         </p>
       </div>
+    </div>
     </div>
   )
 }
