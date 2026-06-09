@@ -131,17 +131,20 @@ function isGeminiRetryable(msg: string) {
     msg.includes('high demand') || msg.includes('overloaded')
 }
 
-function friendlyGeminiError(err: any): Error {
-  const msg: string = err?.message ?? ''
-  if (msg.includes('PerDay') || msg.includes('per_day') || msg.includes('GenerateRequestsPerDay')) {
-    return new Error('Cota diária do Gemini esgotada. Aguarde até amanhã para continuar importando.')
+function friendlyErrorMsg(raw: string): string {
+  if (raw.includes('PerDay') || raw.includes('per_day') || raw.includes('GenerateRequestsPerDay')) {
+    return 'Cota diária do Gemini esgotada. Aguarde até amanhã ou configure GROQ_API_KEY como alternativa gratuita.'
   }
-  if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
-    const seconds = msg.match(/retryDelay["\s:]+(\d+)s/)
-    if (seconds) return new Error(`Gemini sobrecarregado. Aguarde ${seconds[1]} segundos e tente novamente.`)
-    return new Error('Limite do Gemini atingido. Aguarde alguns minutos e tente novamente.')
+  if (raw.includes('429') || raw.includes('quota') || raw.includes('RESOURCE_EXHAUSTED') || raw.includes('rate_limit')) {
+    const seconds = raw.match(/retryDelay["\s:]+(\d+)s/)
+    if (seconds) return `IA sobrecarregada. Aguarde ${seconds[1]} segundos e tente novamente.`
+    return 'Limite da IA atingido. Aguarde alguns minutos e tente novamente.'
   }
-  return err instanceof Error ? err : new Error(msg)
+  if (raw.includes('503') || raw.includes('Service Unavailable') || raw.includes('overloaded')) {
+    return 'Serviço de IA temporariamente indisponível. Tente novamente em alguns segundos.'
+  }
+  const clean = raw.replace(/\[\{.*\}\]/gs, '').trim()
+  return clean.length > 300 ? clean.slice(0, 300) + '…' : clean || 'Erro desconhecido'
 }
 
 async function geminiExtractText(text: string, supermarketName: string): Promise<ExtractedProduct[]> {
@@ -163,7 +166,7 @@ async function geminiExtractText(text: string, supermarketName: string): Promise
       throw err
     }
   }
-  throw friendlyGeminiError(lastErr)
+  throw lastErr
 }
 
 async function geminiExtractFile(base64: string, mimeType: string, supermarketName: string): Promise<ExtractedProduct[]> {
@@ -188,7 +191,7 @@ async function geminiExtractFile(base64: string, mimeType: string, supermarketNa
       throw err
     }
   }
-  throw friendlyGeminiError(lastErr)
+  throw lastErr
 }
 
 // ─── Provedor: Claude (Anthropic — pago, opcional) ───────────────────────────
@@ -221,52 +224,124 @@ async function claudeExtractFile(base64: string, mimeType: string, supermarketNa
   return parseJson(msg.content[0].type === 'text' ? msg.content[0].text : '')
 }
 
+// ─── Provedor: Groq (Llama — gratuito, fallback do Gemini) ──────────────────
+// Chave: GROQ_API_KEY — obtenha gratuitamente em console.groq.com
+// Limites free tier: ~14.400 req/dia, muito mais generoso que o Gemini
+
+const GROQ_TEXT_MODEL   = 'llama-3.3-70b-versatile'
+const GROQ_VISION_MODEL = 'llama-3.2-90b-vision-preview'
+
+function isGroqRetryable(msg: string) {
+  return msg.includes('429') || msg.includes('503') || msg.includes('rate_limit') || msg.includes('overloaded')
+}
+
+async function groqPost(body: object): Promise<any> {
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${process.env.GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(60000),
+  })
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => '')
+    throw new Error(`Groq ${resp.status}: ${text.slice(0, 200)}`)
+  }
+  return resp.json()
+}
+
+async function groqExtractText(text: string, supermarketName: string): Promise<ExtractedProduct[]> {
+  const data = await groqPost({
+    model: GROQ_TEXT_MODEL,
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: `${EXTRACTION_PROMPT(supermarketName)}\n\nTEXTO:\n${text}` },
+    ],
+    max_tokens: 4096,
+    temperature: 0,
+  })
+  return parseJson(data.choices?.[0]?.message?.content ?? '')
+}
+
+async function groqExtractFile(base64: string, mimeType: string, supermarketName: string): Promise<ExtractedProduct[]> {
+  if (mimeType === 'application/pdf') {
+    throw new Error('Groq não processa PDF — usando próximo provedor disponível.')
+  }
+  const data = await groqPost({
+    model: GROQ_VISION_MODEL,
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
+        { type: 'text', text: `${SYSTEM_PROMPT}\n\n${EXTRACTION_PROMPT(supermarketName)}` },
+      ],
+    }],
+    max_tokens: 4096,
+    temperature: 0,
+  })
+  return parseJson(data.choices?.[0]?.message?.content ?? '')
+}
+
 // ─── Roteador de provedores ───────────────────────────────────────────────────
-// Preferência: Gemini → Claude fallback automático em caso de erro/quota → erro
+// Cadeia: Gemini (gratuito) → Groq (gratuito) → Claude (pago, opcional)
 
 function hasGemini() { return !!process.env.GOOGLE_AI_API_KEY }
+function hasGroq()   { return !!process.env.GROQ_API_KEY }
 function hasClaude() { return !!process.env.ANTHROPIC_API_KEY }
 
 function requireProvider() {
-  if (!hasGemini() && !hasClaude()) {
+  if (!hasGemini() && !hasGroq() && !hasClaude()) {
     throw new Error(
-      'Nenhuma chave de IA configurada. Adicione GOOGLE_AI_API_KEY ou ANTHROPIC_API_KEY no .env e reinicie o servidor.'
+      'Nenhuma chave de IA configurada. Adicione GOOGLE_AI_API_KEY ou GROQ_API_KEY no .env e reinicie o servidor.'
     )
   }
 }
 
 async function extrairDeTexto(text: string, supermarketName: string): Promise<ExtractedProduct[]> {
   requireProvider()
+
   if (hasGemini()) {
-    try {
-      return await geminiExtractText(text, supermarketName)
-    } catch (err: any) {
-      const msg = err?.message ?? ''
-      if (isGeminiRetryable(msg) && hasClaude()) {
-        console.warn('[Gemini] Quota/rate limit — usando Claude como fallback')
-        return claudeExtractText(text, supermarketName)
-      }
-      throw err
+    try { return await geminiExtractText(text, supermarketName) }
+    catch (err: any) {
+      if (!isGeminiRetryable(err?.message ?? '')) throw err
+      console.warn('[Gemini] Quota/rate limit — tentando Groq')
     }
   }
-  return claudeExtractText(text, supermarketName)
+
+  if (hasGroq()) {
+    try { return await groqExtractText(text, supermarketName) }
+    catch (err: any) {
+      if (!isGroqRetryable(err?.message ?? '')) throw err
+      console.warn('[Groq] Rate limit — tentando Claude')
+    }
+  }
+
+  if (hasClaude()) return claudeExtractText(text, supermarketName)
+
+  throw new Error('Todos os provedores de IA estão com limite atingido. Tente novamente mais tarde.')
 }
 
 async function extrairDeArquivo(base64: string, mimeType: string, supermarketName: string): Promise<ExtractedProduct[]> {
   requireProvider()
+
   if (hasGemini()) {
-    try {
-      return await geminiExtractFile(base64, mimeType, supermarketName)
-    } catch (err: any) {
-      const msg = err?.message ?? ''
-      if (isGeminiRetryable(msg) && hasClaude()) {
-        console.warn('[Gemini] Quota/rate limit — usando Claude como fallback')
-        return claudeExtractFile(base64, mimeType, supermarketName)
-      }
-      throw err
+    try { return await geminiExtractFile(base64, mimeType, supermarketName) }
+    catch (err: any) {
+      if (!isGeminiRetryable(err?.message ?? '')) throw err
+      console.warn('[Gemini] Quota/rate limit — tentando Groq')
     }
   }
-  return claudeExtractFile(base64, mimeType, supermarketName)
+
+  if (hasGroq()) {
+    try { return await groqExtractFile(base64, mimeType, supermarketName) }
+    catch (err: any) {
+      if (!isGroqRetryable(err?.message ?? '')) throw err
+      console.warn('[Groq] Rate limit — tentando Claude')
+    }
+  }
+
+  if (hasClaude()) return claudeExtractFile(base64, mimeType, supermarketName)
+
+  throw new Error('Todos os provedores de IA estão com limite atingido. Tente novamente mais tarde.')
 }
 
 // ─── Scraping de links com Playwright (gratuito, sem API) ────────────────────
@@ -427,6 +502,7 @@ async function salvarProdutos(
 
 export const verificarProvedores = createServerFn({ method: 'GET' }).handler(async () => ({
   gemini: hasGemini(),
+  groq: hasGroq(),
   claude: hasClaude(),
   playwright: !IS_VERCEL && await import('playwright').then(() => true).catch(() => false),
 }))
@@ -456,7 +532,7 @@ export const importarLink = createServerFn({ method: 'POST' })
 
       return { ok: true, found, imported, jobId: job.id }
     } catch (err: any) {
-      const msg = err?.message ?? 'Erro desconhecido'
+      const msg = friendlyErrorMsg(err?.message ?? 'Erro desconhecido')
       await db.update(ingestionJobs).set({
         status: 'failed', errorMessage: msg,
       }).where(eq(ingestionJobs.id, job.id))
@@ -489,7 +565,7 @@ export const importarArquivo = createServerFn({ method: 'POST' })
 
       return { ok: true, found, imported, jobId: job.id }
     } catch (err: any) {
-      const msg = err?.message ?? 'Erro desconhecido'
+      const msg = friendlyErrorMsg(err?.message ?? 'Erro desconhecido')
       await db.update(ingestionJobs).set({
         status: 'failed', errorMessage: msg,
       }).where(eq(ingestionJobs.id, job.id))

@@ -33,7 +33,7 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-function ProvedoresStatus({ provedores }: { provedores: { gemini: boolean; claude: boolean; playwright: boolean } }) {
+function ProvedoresStatus({ provedores }: { provedores: { gemini: boolean; groq: boolean; claude: boolean; playwright: boolean } }) {
   const nenhum = !provedores.gemini && !provedores.claude
 
   if (nenhum) {
@@ -64,6 +64,7 @@ function ProvedoresStatus({ provedores }: { provedores: { gemini: boolean; claud
       </div>
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
         <ProviderChip label="Gemini Flash" active={provedores.gemini} badge="gratuito" />
+        <ProviderChip label="Groq Llama"   active={provedores.groq}   badge="gratuito" />
         <ProviderChip label="Claude"       active={provedores.claude} badge="pago" />
         <ProviderChip label="Playwright"   active={provedores.playwright} badge="JS rendering" />
       </div>
@@ -110,7 +111,7 @@ function ImportarPage() {
   })
 
   const mercadoSelecionado = mercados.find(m => m.id === mercadoId)
-  const iaDisponivel = provedores ? (provedores.gemini || provedores.claude) : false
+  const iaDisponivel = provedores ? (provedores.gemini || provedores.groq || provedores.claude) : false
   const urlList = urls.split('\n').map(u => u.trim()).filter(Boolean)
   const itemCount = tipo === 'link' ? urlList.length : arquivos.length
 

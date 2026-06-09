@@ -34,6 +34,7 @@ const config = defineConfig(({ mode }) => {
       'process.env.GOOGLE_CLIENT_SECRET': JSON.stringify(env.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET || ''),
       'process.env.VERCEL': JSON.stringify(env.VERCEL || process.env.VERCEL || ''),
       'process.env.GOOGLE_AI_API_KEY': JSON.stringify(env.GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_API_KEY || ''),
+      'process.env.GROQ_API_KEY': JSON.stringify(env.GROQ_API_KEY || process.env.GROQ_API_KEY || ''),
     },
     plugins: [injectedHeadScriptsFallback(), devtools(), tailwindcss(), tanstackStart({ server: { maxRequestBodySize: 52428800 } }), viteReact()],
   }
