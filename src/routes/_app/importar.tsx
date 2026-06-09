@@ -34,7 +34,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function ProvedoresStatus({ provedores }: { provedores: { gemini: boolean; groq: boolean; claude: boolean; playwright: boolean } }) {
-  const nenhum = !provedores.gemini && !provedores.claude
+  const nenhum = !provedores.gemini && !provedores.groq && !provedores.claude
 
   if (nenhum) {
     return (

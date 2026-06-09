@@ -74,7 +74,7 @@ const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: process.env.BETTER_AUTH_URL || 'https://supermercado-facil.vercel.app',
   trustedOrigins: [
     'http://localhost:3000',
     'https://supermercado-facil.vercel.app',
@@ -129,26 +129,6 @@ export default async function handler(req, res) {
     let response
     if (req.url?.startsWith('/api/auth')) {
       response = await auth.handler(request)
-      const loc = response.headers.get('location') ?? ''
-      const isSocialSignIn = req.url?.includes('/sign-in/social')
-      const isCallback = req.url?.includes('/callback/')
-      if (isSocialSignIn) {
-        const hasCookies = typeof response.headers.getSetCookie === 'function'
-          ? response.headers.getSetCookie().length
-          : '?'
-        console.log('[oauth-signin]', response.status, 'cookies-set:', hasCookies, 'baseURL-env:', process.env.BETTER_AUTH_URL)
-      }
-      if (isCallback) {
-        const hasCookies = typeof response.headers.getSetCookie === 'function'
-          ? response.headers.getSetCookie().length
-          : '?'
-        const hasCookieHeader = !!request.headers.get('cookie')
-        console.log('[oauth-callback]', response.status, 'redirect→', loc, 'cookies-in:', hasCookieHeader, 'cookies-out:', hasCookies)
-        if (loc.includes('/error') || loc.includes('error=')) {
-          const body = await response.clone().text()
-          console.error('[oauth-callback-FAIL]', 'url:', req.url, 'location:', loc, 'body:', body.slice(0, 500))
-        }
-      }
       if (response.status >= 400) {
         const body = await response.clone().text()
         console.error('[auth]', response.status, req.url, body)
