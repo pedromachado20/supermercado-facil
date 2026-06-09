@@ -99,16 +99,18 @@ async function nodeToWebRequest(req) {
 
 async function sendWebResponse(response, res) {
   res.statusCode = response.status
-  // Handle Set-Cookie specially — entries() pode mesclar múltiplos cookies
-  const setCookies = typeof response.headers.getSetCookie === 'function'
-    ? response.headers.getSetCookie()
-    : null
-  for (const [key, value] of response.headers.entries()) {
-    if (key.toLowerCase() === 'set-cookie') continue
-    res.setHeader(key, value)
-  }
-  if (setCookies && setCookies.length > 0) {
-    res.setHeader('set-cookie', setCookies)
+  if (typeof response.headers.getSetCookie === 'function') {
+    const setCookies = response.headers.getSetCookie()
+    for (const [key, value] of response.headers.entries()) {
+      if (key.toLowerCase() === 'set-cookie') continue
+      res.setHeader(key, value)
+    }
+    if (setCookies.length > 0) res.setHeader('set-cookie', setCookies)
+  } else {
+    // fallback — Node.js sem getSetCookie
+    for (const [key, value] of response.headers.entries()) {
+      res.setHeader(key, value)
+    }
   }
   const buffer = await response.arrayBuffer()
   res.end(Buffer.from(buffer))
@@ -120,13 +122,25 @@ export default async function handler(req, res) {
     let response
     if (req.url?.startsWith('/api/auth')) {
       response = await auth.handler(request)
+      const loc = response.headers.get('location') ?? ''
+      const isSocialSignIn = req.url?.includes('/sign-in/social')
       const isCallback = req.url?.includes('/callback/')
+      if (isSocialSignIn) {
+        const hasCookies = typeof response.headers.getSetCookie === 'function'
+          ? response.headers.getSetCookie().length
+          : '?'
+        console.log('[oauth-signin]', response.status, 'cookies-set:', hasCookies, 'baseURL-env:', process.env.BETTER_AUTH_URL)
+      }
       if (isCallback) {
-        const loc = response.headers.get('location')
-        const cookies = typeof response.headers.getSetCookie === 'function'
-          ? response.headers.getSetCookie()
-          : ['(getSetCookie indisponível)']
-        console.log('[oauth-callback]', response.status, 'redirect→', loc, 'cookies:', cookies.length)
+        const hasCookies = typeof response.headers.getSetCookie === 'function'
+          ? response.headers.getSetCookie().length
+          : '?'
+        const hasCookieHeader = !!request.headers.get('cookie')
+        console.log('[oauth-callback]', response.status, 'redirect→', loc, 'cookies-in:', hasCookieHeader, 'cookies-out:', hasCookies)
+        if (loc.includes('/error') || loc.includes('error=')) {
+          const body = await response.clone().text()
+          console.error('[oauth-callback-FAIL]', 'url:', req.url, 'location:', loc, 'body:', body.slice(0, 500))
+        }
       }
       if (response.status >= 400) {
         const body = await response.clone().text()
