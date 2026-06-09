@@ -30,8 +30,7 @@ const config = defineConfig(({ mode }) => {
       'process.env.BETTER_AUTH_SECRET': JSON.stringify(env.BETTER_AUTH_SECRET || process.env.BETTER_AUTH_SECRET || ''),
       'process.env.BETTER_AUTH_URL': JSON.stringify(env.BETTER_AUTH_URL || process.env.BETTER_AUTH_URL || ''),
       'process.env.ANTHROPIC_API_KEY': JSON.stringify(env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY || ''),
-      'process.env.GOOGLE_CLIENT_ID': JSON.stringify(env.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || ''),
-      'process.env.GOOGLE_CLIENT_SECRET': JSON.stringify(env.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET || ''),
+      // GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET são lidos em runtime pelo servidor (não no build)
       'process.env.VERCEL': JSON.stringify(env.VERCEL || process.env.VERCEL || ''),
       'process.env.GOOGLE_AI_API_KEY': JSON.stringify(env.GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_API_KEY || ''),
       'process.env.GROQ_API_KEY': JSON.stringify(env.GROQ_API_KEY || process.env.GROQ_API_KEY || ''),
