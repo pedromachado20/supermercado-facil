@@ -443,10 +443,11 @@ export const importarLink = createServerFn({ method: 'POST' })
 
       return { ok: true, found, imported, jobId: job.id }
     } catch (err: any) {
+      const msg = err?.message ?? 'Erro desconhecido'
       await db.update(ingestionJobs).set({
-        status: 'failed', errorMessage: err?.message ?? 'Erro desconhecido',
+        status: 'failed', errorMessage: msg,
       }).where(eq(ingestionJobs.id, job.id))
-      throw err
+      throw new Error(msg)
     }
   })
 
@@ -475,10 +476,11 @@ export const importarArquivo = createServerFn({ method: 'POST' })
 
       return { ok: true, found, imported, jobId: job.id }
     } catch (err: any) {
+      const msg = err?.message ?? 'Erro desconhecido'
       await db.update(ingestionJobs).set({
-        status: 'failed', errorMessage: err?.message ?? 'Erro desconhecido',
+        status: 'failed', errorMessage: msg,
       }).where(eq(ingestionJobs.id, job.id))
-      throw err
+      throw new Error(msg)
     }
   })
 

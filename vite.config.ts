@@ -26,12 +26,16 @@ const config = defineConfig(({ mode }) => {
   return {
     resolve: { tsconfigPaths: true },
     define: {
-      'process.env.DATABASE_URL': JSON.stringify(env.DATABASE_URL),
-      'process.env.BETTER_AUTH_SECRET': JSON.stringify(env.BETTER_AUTH_SECRET),
-      'process.env.BETTER_AUTH_URL': JSON.stringify(env.BETTER_AUTH_URL),
-      'process.env.ANTHROPIC_API_KEY': JSON.stringify(env.ANTHROPIC_API_KEY),
+      'process.env.DATABASE_URL': JSON.stringify(env.DATABASE_URL || process.env.DATABASE_URL || ''),
+      'process.env.BETTER_AUTH_SECRET': JSON.stringify(env.BETTER_AUTH_SECRET || process.env.BETTER_AUTH_SECRET || ''),
+      'process.env.BETTER_AUTH_URL': JSON.stringify(env.BETTER_AUTH_URL || process.env.BETTER_AUTH_URL || ''),
+      'process.env.ANTHROPIC_API_KEY': JSON.stringify(env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY || ''),
+      'process.env.GOOGLE_CLIENT_ID': JSON.stringify(env.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || ''),
+      'process.env.GOOGLE_CLIENT_SECRET': JSON.stringify(env.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET || ''),
+      'process.env.VERCEL': JSON.stringify(env.VERCEL || process.env.VERCEL || ''),
+      'process.env.GOOGLE_AI_API_KEY': JSON.stringify(env.GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_API_KEY || ''),
     },
-    plugins: [injectedHeadScriptsFallback(), devtools(), tailwindcss(), tanstackStart(), viteReact()],
+    plugins: [injectedHeadScriptsFallback(), devtools(), tailwindcss(), tanstackStart({ server: { maxRequestBodySize: 52428800 } }), viteReact()],
   }
 })
 
