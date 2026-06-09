@@ -31,7 +31,8 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24,
   },
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: process.env.BETTER_AUTH_URL ||
+    (process.env.VERCEL ? 'https://supermercado-facil.vercel.app' : 'http://localhost:3000'),
   trustedOrigins: [
     'http://localhost:3000',
     'https://supermercado-facil.vercel.app',
