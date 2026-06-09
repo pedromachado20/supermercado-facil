@@ -98,8 +98,16 @@ async function nodeToWebRequest(req) {
 
 async function sendWebResponse(response, res) {
   res.statusCode = response.status
+  // Handle Set-Cookie specially — entries() pode mesclar múltiplos cookies
+  const setCookies = typeof response.headers.getSetCookie === 'function'
+    ? response.headers.getSetCookie()
+    : null
   for (const [key, value] of response.headers.entries()) {
+    if (key.toLowerCase() === 'set-cookie') continue
     res.setHeader(key, value)
+  }
+  if (setCookies && setCookies.length > 0) {
+    res.setHeader('set-cookie', setCookies)
   }
   const buffer = await response.arrayBuffer()
   res.end(Buffer.from(buffer))
@@ -111,6 +119,14 @@ export default async function handler(req, res) {
     let response
     if (req.url?.startsWith('/api/auth')) {
       response = await auth.handler(request)
+      const isCallback = req.url?.includes('/callback/')
+      if (isCallback) {
+        const loc = response.headers.get('location')
+        const cookies = typeof response.headers.getSetCookie === 'function'
+          ? response.headers.getSetCookie()
+          : ['(getSetCookie indisponível)']
+        console.log('[oauth-callback]', response.status, 'redirect→', loc, 'cookies:', cookies.length)
+      }
       if (response.status >= 400) {
         const body = await response.clone().text()
         console.error('[auth]', response.status, req.url, body)
