@@ -19,9 +19,14 @@ function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      await signIn.social({ provider: 'google', callbackURL: '/' })
-    } catch {
-      setError('Erro ao entrar com Google. Verifique a configuração.')
+      const result = await signIn.social({ provider: 'google', callbackURL: '/' })
+      if (result?.error) {
+        setError('Google: ' + (result.error.message ?? JSON.stringify(result.error)))
+        setLoading(false)
+      }
+      // se não houve erro, o redirect já aconteceu automaticamente
+    } catch (e: any) {
+      setError('Erro ao entrar com Google: ' + (e?.message ?? 'falha desconhecida'))
       setLoading(false)
     }
   }
