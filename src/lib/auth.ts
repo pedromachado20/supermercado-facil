@@ -20,7 +20,12 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
-      allowDangerousEmailAccountLinking: true,
+    },
+  },
+  account: {
+    accountLinking: {
+      requireLocalEmailVerified: false,
+      trustedProviders: ['google'],
     },
   },
   session: {

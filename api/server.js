@@ -63,7 +63,14 @@ const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
+    },
+  },
+  account: {
+    accountLinking: {
+      // usuários criados com email/senha não têm emailVerified=true no banco
+      // esta flag permite vincular login Google à conta existente sem exigir verificação local
+      requireLocalEmailVerified: false,
+      trustedProviders: ['google'],
     },
   },
   secret: process.env.BETTER_AUTH_SECRET,
