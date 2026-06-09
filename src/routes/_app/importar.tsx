@@ -118,13 +118,8 @@ function ImportarPage() {
   const importImg = useMutation({
     mutationFn: async () => {
       if (!arquivo) return
-      const reader = new FileReader()
-      const base64 = await new Promise<string>((res, rej) => {
-        reader.onload = e => { res((e.target?.result as string).split(',')[1]) }
-        reader.onerror = rej
-        reader.readAsDataURL(arquivo)
-      })
-      return importarArquivo({ data: { supermarketId: mercadoId, supermarketName: mercadoSelecionado!.name, base64, mimeType: arquivo.type, isPromo } })
+      const { base64, mimeType } = await comprimirArquivo(arquivo)
+      return importarArquivo({ data: { supermarketId: mercadoId, supermarketName: mercadoSelecionado!.name, base64, mimeType, isPromo } })
     },
     onSuccess: (res) => {
       if (res) setResultado({ found: res.found, imported: res.imported })
@@ -373,4 +368,39 @@ function ImportarPage() {
       )}
     </div>
   )
+}
+
+async function comprimirArquivo(file: File): Promise<{ base64: string; mimeType: string }> {
+  if (file.type === 'application/pdf') {
+    const reader = new FileReader()
+    const base64 = await new Promise<string>((res, rej) => {
+      reader.onload = e => res((e.target?.result as string).split(',')[1])
+      reader.onerror = rej
+      reader.readAsDataURL(file)
+    })
+    return { base64, mimeType: 'application/pdf' }
+  }
+
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const MAX_DIM = 1920
+      let { width, height } = img
+      if (width > MAX_DIM || height > MAX_DIM) {
+        const ratio = Math.min(MAX_DIM / width, MAX_DIM / height)
+        width = Math.round(width * ratio)
+        height = Math.round(height * ratio)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.82)
+      resolve({ base64: dataUrl.split(',')[1], mimeType: 'image/jpeg' })
+    }
+    img.onerror = reject
+    img.src = url
+  })
 }

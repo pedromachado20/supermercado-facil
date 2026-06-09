@@ -125,6 +125,12 @@ function parseJson(text: string): ExtractedProduct[] {
 
 const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-2.0-flash']
 
+function isGeminiRetryable(msg: string) {
+  return msg.includes('429') || msg.includes('503') || msg.includes('quota') ||
+    msg.includes('RESOURCE_EXHAUSTED') || msg.includes('Service Unavailable') ||
+    msg.includes('high demand') || msg.includes('overloaded')
+}
+
 async function geminiExtractText(text: string, supermarketName: string): Promise<ExtractedProduct[]> {
   const { GoogleGenerativeAI } = await import('@google/generative-ai')
   const genai = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!)
@@ -136,8 +142,8 @@ async function geminiExtractText(text: string, supermarketName: string): Promise
       return parseJson(result.response.text())
     } catch (err: any) {
       const msg = err?.message ?? ''
-      if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
-        console.warn(`[Gemini] ${modelName} quota esgotada — tentando próximo modelo`)
+      if (isGeminiRetryable(msg)) {
+        console.warn(`[Gemini] ${modelName} indisponível — tentando próximo modelo`)
         lastErr = err
         continue
       }
@@ -161,8 +167,8 @@ async function geminiExtractFile(base64: string, mimeType: string, supermarketNa
       return parseJson(result.response.text())
     } catch (err: any) {
       const msg = err?.message ?? ''
-      if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
-        console.warn(`[Gemini] ${modelName} quota esgotada — tentando próximo modelo`)
+      if (isGeminiRetryable(msg)) {
+        console.warn(`[Gemini] ${modelName} indisponível — tentando próximo modelo`)
         lastErr = err
         continue
       }
@@ -223,8 +229,7 @@ async function extrairDeTexto(text: string, supermarketName: string): Promise<Ex
       return await geminiExtractText(text, supermarketName)
     } catch (err: any) {
       const msg = err?.message ?? ''
-      const isQuotaOrRate = msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')
-      if (isQuotaOrRate && hasClaude()) {
+      if (isGeminiRetryable(msg) && hasClaude()) {
         console.warn('[Gemini] Quota/rate limit — usando Claude como fallback')
         return claudeExtractText(text, supermarketName)
       }
@@ -241,8 +246,7 @@ async function extrairDeArquivo(base64: string, mimeType: string, supermarketNam
       return await geminiExtractFile(base64, mimeType, supermarketName)
     } catch (err: any) {
       const msg = err?.message ?? ''
-      const isQuotaOrRate = msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')
-      if (isQuotaOrRate && hasClaude()) {
+      if (isGeminiRetryable(msg) && hasClaude()) {
         console.warn('[Gemini] Quota/rate limit — usando Claude como fallback')
         return claudeExtractFile(base64, mimeType, supermarketName)
       }
