@@ -131,6 +131,19 @@ function isGeminiRetryable(msg: string) {
     msg.includes('high demand') || msg.includes('overloaded')
 }
 
+function friendlyGeminiError(err: any): Error {
+  const msg: string = err?.message ?? ''
+  if (msg.includes('PerDay') || msg.includes('per_day') || msg.includes('GenerateRequestsPerDay')) {
+    return new Error('Cota diária do Gemini esgotada. Aguarde até amanhã para continuar importando.')
+  }
+  if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+    const seconds = msg.match(/retryDelay["\s:]+(\d+)s/)
+    if (seconds) return new Error(`Gemini sobrecarregado. Aguarde ${seconds[1]} segundos e tente novamente.`)
+    return new Error('Limite do Gemini atingido. Aguarde alguns minutos e tente novamente.')
+  }
+  return err instanceof Error ? err : new Error(msg)
+}
+
 async function geminiExtractText(text: string, supermarketName: string): Promise<ExtractedProduct[]> {
   const { GoogleGenerativeAI } = await import('@google/generative-ai')
   const genai = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!)
@@ -150,7 +163,7 @@ async function geminiExtractText(text: string, supermarketName: string): Promise
       throw err
     }
   }
-  throw lastErr
+  throw friendlyGeminiError(lastErr)
 }
 
 async function geminiExtractFile(base64: string, mimeType: string, supermarketName: string): Promise<ExtractedProduct[]> {
@@ -175,7 +188,7 @@ async function geminiExtractFile(base64: string, mimeType: string, supermarketNa
       throw err
     }
   }
-  throw lastErr
+  throw friendlyGeminiError(lastErr)
 }
 
 // ─── Provedor: Claude (Anthropic — pago, opcional) ───────────────────────────
