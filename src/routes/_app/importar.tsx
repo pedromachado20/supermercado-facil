@@ -180,6 +180,11 @@ function ImportarPage() {
       }
 
       setResultados([...novosResultados])
+
+      // Pausa entre itens para não estourar o limite por minuto do Gemini
+      if (i < items.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 3000))
+      }
     }
 
     setLoading(false)

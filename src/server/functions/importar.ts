@@ -123,7 +123,7 @@ function parseJson(text: string): ExtractedProduct[] {
 // ─── Provedor: Gemini (Google AI) ─────────────────────────────────────────────
 // Tenta modelos em ordem até um funcionar (quotas independentes)
 
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-2.0-flash']
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash-lite']
 
 function isGeminiRetryable(msg: string) {
   return msg.includes('429') || msg.includes('503') || msg.includes('quota') ||
