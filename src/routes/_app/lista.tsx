@@ -4,10 +4,11 @@ import {
   listarItensLista, adicionarItemLista, toggleItemLista, removerItemLista,
   limparListaMarcados, buscarMelhorPrecoLista, definirAlertaPreco,
   listarListas, criarLista, renomearLista, excluirLista, obterOuCriarListaDefault,
+  atualizarQuantidadeItem,
 } from '#/server/functions/lista'
 import { obterConfiguracoes, salvarConfiguracoes } from '#/server/functions/configuracoes'
 import { buscarProdutosComPrecos } from '#/server/functions/produtos'
-import { ShoppingCart, Plus, Trash2, X, TrendingDown, Printer, Share2, List, Pencil, Check, Bell, BellOff, Wallet } from 'lucide-react'
+import { ShoppingCart, Plus, Trash2, X, TrendingDown, Printer, Share2, List, Pencil, Check, Bell, BellOff, Wallet, Hash } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 export const Route = createFileRoute('/_app/lista')({
@@ -34,6 +35,9 @@ function ListaPage() {
   const [alertInput, setAlertInput] = useState('')
   const [editandoOrcamento, setEditandoOrcamento] = useState(false)
   const [orcamentoInput, setOrcamentoInput] = useState('')
+  const [editQtdModal, setEditQtdModal] = useState<{ id: string; name: string; quantity: number; unit: string | null } | null>(null)
+  const [editQtdInput, setEditQtdInput] = useState('')
+  const [editUnit, setEditUnit] = useState<'un' | 'kg'>('un')
 
   const { data: listaDefault } = useQuery({
     queryKey: ['lista-default'],
@@ -86,6 +90,10 @@ function ListaPage() {
   const remover = useMutation({
     mutationFn: (id: string) => removerItemLista({ data: { id } }),
     onSuccess: invalidate,
+  })
+  const atualizarQtd = useMutation({
+    mutationFn: (d: { id: string; quantity: number; unit: string | null }) => atualizarQuantidadeItem({ data: d }),
+    onSuccess: () => { invalidate(); setEditQtdModal(null) },
   })
   const limpar = useMutation({
     mutationFn: () => limparListaMarcados(),
@@ -270,6 +278,18 @@ function ListaPage() {
                         {alertAtivo ? <Bell size={14} /> : <BellOff size={14} />}
                       </button>
                     )}
+                    <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-text-soft)' }}
+                      title="Alterar quantidade"
+                      onClick={e => {
+                        e.stopPropagation()
+                        const u = item.unit === 'kg' ? 'kg' : 'un'
+                        const q = Number(item.quantity ?? 1)
+                        setEditUnit(u)
+                        setEditQtdInput(u === 'kg' ? q.toFixed(3).replace('.', ',') : String(Math.round(q)))
+                        setEditQtdModal({ id: item.id, name: item.productName ?? item.customName ?? 'Item', quantity: q, unit: item.unit ?? null })
+                      }}>
+                      <Hash size={14} />
+                    </button>
                     <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)' }}
                       onClick={e => { e.stopPropagation(); remover.mutate(item.id) }}>
                       <Trash2 size={14} />
@@ -658,6 +678,72 @@ function ListaPage() {
               <button className="btn btn-secondary" onClick={() => { setModal(false); resetForm() }}>Cancelar</button>
               <button className="btn btn-primary" onClick={() => adicionar.mutate()} disabled={adicionar.isPending || (!produtoId && !customName)}>
                 {adicionar.isPending ? 'Adicionando...' : 'Adicionar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal editar quantidade */}
+      {editQtdModal && (
+        <div className="modal-overlay" onClick={() => setEditQtdModal(null)}>
+          <div className="modal" style={{ maxWidth: '360px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ fontWeight: 700 }}>Alterar quantidade</h3>
+              <button className="btn btn-ghost btn-sm" onClick={() => setEditQtdModal(null)}><X size={18} /></button>
+            </div>
+            <div className="modal-body">
+              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-soft)', marginBottom: '1rem' }}>{editQtdModal.name}</p>
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                {(['un', 'kg'] as const).map(u => (
+                  <button key={u} type="button"
+                    className={`btn btn-sm ${editUnit === u ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      setEditUnit(u)
+                      setEditQtdInput(u === 'kg' ? '1,000' : '1')
+                    }}>
+                    {u === 'un' ? 'Unidade' : 'Kg'}
+                  </button>
+                ))}
+              </div>
+              {editUnit === 'un' ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <button type="button" className="btn btn-secondary" style={{ width: '2.5rem', justifyContent: 'center', flexShrink: 0 }}
+                    onClick={() => { const v = Math.max(1, parseInt(editQtdInput) - 1); setEditQtdInput(String(v)) }}>−</button>
+                  <input type="number" className="input" min={1} value={editQtdInput}
+                    onChange={e => setEditQtdInput(String(Math.max(1, parseInt(e.target.value) || 1)))}
+                    style={{ textAlign: 'center' }} />
+                  <button type="button" className="btn btn-secondary" style={{ width: '2.5rem', justifyContent: 'center', flexShrink: 0 }}
+                    onClick={() => setEditQtdInput(String(parseInt(editQtdInput) + 1))}>+</button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <button type="button" className="btn btn-secondary" style={{ width: '2.5rem', justifyContent: 'center', flexShrink: 0 }}
+                    onClick={() => { const v = Math.max(0.1, parseFloat((parseFloat(editQtdInput.replace(',', '.')) - 0.1).toFixed(3))); setEditQtdInput(String(v).replace('.', ',')) }}>−</button>
+                  <input type="text" className="input" placeholder="0,000"
+                    value={editQtdInput}
+                    onChange={e => setEditQtdInput(e.target.value)}
+                    onBlur={() => {
+                      const n = parseFloat(editQtdInput.replace(',', '.'))
+                      setEditQtdInput(!isNaN(n) && n > 0 ? n.toFixed(3).replace('.', ',') : '0,100')
+                    }}
+                    style={{ textAlign: 'center' }} />
+                  <button type="button" className="btn btn-secondary" style={{ width: '2.5rem', justifyContent: 'center', flexShrink: 0 }}
+                    onClick={() => { const v = parseFloat((parseFloat(editQtdInput.replace(',', '.')) + 0.1).toFixed(3)); setEditQtdInput(String(v).replace('.', ',')) }}>+</button>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setEditQtdModal(null)}>Cancelar</button>
+              <button className="btn btn-primary" disabled={atualizarQtd.isPending}
+                onClick={() => {
+                  const raw = editQtdInput.replace(',', '.')
+                  const n = parseFloat(raw)
+                  if (!isNaN(n) && n > 0)
+                    atualizarQtd.mutate({ id: editQtdModal.id, quantity: n, unit: editUnit === 'kg' ? 'kg' : null })
+                }}>
+                {atualizarQtd.isPending ? 'Salvando...' : 'Salvar'}
               </button>
             </div>
           </div>

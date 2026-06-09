@@ -159,6 +159,16 @@ export const definirAlertaPreco = createServerFn({ method: 'POST' })
     return { ok: true }
   })
 
+export const atualizarQuantidadeItem = createServerFn({ method: 'POST' })
+  .inputValidator((d: { id: string; quantity: number; unit: string | null }) => d)
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    await db.update(shoppingListItems)
+      .set({ quantity: String(data.quantity), unit: data.unit })
+      .where(and(eq(shoppingListItems.id, data.id), eq(shoppingListItems.userId, userId)))
+    return { ok: true }
+  })
+
 export const toggleItemLista = createServerFn({ method: 'POST' })
   .inputValidator((d: { id: string; checked: boolean }) => d)
   .handler(async ({ data, request }) => {
