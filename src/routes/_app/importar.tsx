@@ -181,9 +181,9 @@ function ImportarPage() {
 
       setResultados([...novosResultados])
 
-      // Pausa entre itens para não estourar o limite por minuto do Gemini
+      // Pausa entre itens para não estourar o limite por minuto do Gemini (15 req/min free tier)
       if (i < items.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 3000))
+        await new Promise(resolve => setTimeout(resolve, 6000))
       }
     }
 
