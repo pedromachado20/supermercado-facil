@@ -21,6 +21,7 @@ import { Route as AppProdutosRouteImport } from './routes/_app/produtos'
 import { Route as AppMercadosRouteImport } from './routes/_app/mercados'
 import { Route as AppListaRouteImport } from './routes/_app/lista'
 import { Route as AppImportarRouteImport } from './routes/_app/importar'
+import { Route as AppManualRouteImport } from './routes/_app/manual'
 import { Route as AppCategoriasRouteImport } from './routes/_app/categorias'
 
 const RegistroRoute = RegistroRouteImport.update({
@@ -82,6 +83,11 @@ const AppImportarRoute = AppImportarRouteImport.update({
   path: '/importar',
   getParentRoute: () => AppRoute,
 } as any)
+const AppManualRoute = AppManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCategoriasRoute = AppCategoriasRouteImport.update({
   id: '/categorias',
   path: '/categorias',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/produtos': typeof AppProdutosRoute
   '/receitas': typeof AppReceitasRoute
   '/relatorios': typeof AppRelatoriosRoute
+  '/manual': typeof AppManualRoute
 }
 export interface FileRoutesByTo {
   '/esqueci-senha': typeof EsqueciSenhaRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/produtos': typeof AppProdutosRoute
   '/receitas': typeof AppReceitasRoute
   '/relatorios': typeof AppRelatoriosRoute
+  '/manual': typeof AppManualRoute
   '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/_app/produtos': typeof AppProdutosRoute
   '/_app/receitas': typeof AppReceitasRoute
   '/_app/relatorios': typeof AppRelatoriosRoute
+  '/_app/manual': typeof AppManualRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/receitas'
     | '/relatorios'
+    | '/manual'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/esqueci-senha'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/receitas'
     | '/relatorios'
+    | '/manual'
     | '/'
   id:
     | '__root__'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/_app/produtos'
     | '/_app/receitas'
     | '/_app/relatorios'
+    | '/_app/manual'
     | '/_app/'
   fileRoutesById: FileRoutesById
 }
@@ -237,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRelatoriosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manual': {
+      id: '/_app/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof AppManualRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/receitas': {
       id: '/_app/receitas'
       path: '/receitas'
@@ -286,6 +305,7 @@ interface AppRouteChildren {
   AppCategoriasRoute: typeof AppCategoriasRoute
   AppImportarRoute: typeof AppImportarRoute
   AppListaRoute: typeof AppListaRoute
+  AppManualRoute: typeof AppManualRoute
   AppMercadosRoute: typeof AppMercadosRoute
   AppProdutosRoute: typeof AppProdutosRoute
   AppReceitasRoute: typeof AppReceitasRoute
@@ -297,6 +317,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCategoriasRoute: AppCategoriasRoute,
   AppImportarRoute: AppImportarRoute,
   AppListaRoute: AppListaRoute,
+  AppManualRoute: AppManualRoute,
   AppMercadosRoute: AppMercadosRoute,
   AppProdutosRoute: AppProdutosRoute,
   AppReceitasRoute: AppReceitasRoute,

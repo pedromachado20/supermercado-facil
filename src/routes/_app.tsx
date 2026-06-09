@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
   Store, Package, Tag, UploadCloud,
   LayoutDashboard, BarChart2, LogOut, ChefHat,
-  Menu, X, ShoppingBag, ShoppingCart, Sun, Moon
+  Menu, X, ShoppingBag, ShoppingCart, Sun, Moon, BookOpen
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -40,6 +40,7 @@ const NAV = [
   { to: '/importar',   label: 'Importar Dados',  icon: UploadCloud },
   { to: '/receitas',   label: 'Receitas',        icon: ChefHat },
   { to: '/relatorios', label: 'Relatórios',      icon: BarChart2 },
+  { to: '/manual',    label: 'Manual',           icon: BookOpen },
 ]
 
 function useDarkMode() {
