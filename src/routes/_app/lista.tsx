@@ -6,8 +6,8 @@ import {
   listarListas, criarLista, renomearLista, excluirLista, obterOuCriarListaDefault,
 } from '#/server/functions/lista'
 import { obterConfiguracoes, salvarConfiguracoes } from '#/server/functions/configuracoes'
-import { buscarProdutosComPrecos, buscarProdutoPorCodigoBarras } from '#/server/functions/produtos'
-import { ShoppingCart, Plus, Trash2, X, TrendingDown, Printer, Share2, List, Pencil, Check, Bell, BellOff, Wallet, Camera } from 'lucide-react'
+import { buscarProdutosComPrecos } from '#/server/functions/produtos'
+import { ShoppingCart, Plus, Trash2, X, TrendingDown, Printer, Share2, List, Pencil, Check, Bell, BellOff, Wallet } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 export const Route = createFileRoute('/_app/lista')({
@@ -21,7 +21,9 @@ function ListaPage() {
   const [modal, setModal] = useState(false)
   const [busca, setBusca] = useState('')
   const [customName, setCustomName] = useState('')
-  const [qty, setQty] = useState(1)
+  const [qty, setQty] = useState<number>(1)
+  const [unit, setUnit] = useState<'un' | 'kg'>('un')
+  const [qtyInput, setQtyInput] = useState('1')
   const [produtoId, setProdutoId] = useState('')
   const [tab, setTab] = useState<'lista' | 'economia'>('lista')
   const [modalListas, setModalListas] = useState(false)
@@ -32,8 +34,6 @@ function ListaPage() {
   const [alertInput, setAlertInput] = useState('')
   const [editandoOrcamento, setEditandoOrcamento] = useState(false)
   const [orcamentoInput, setOrcamentoInput] = useState('')
-  const [scannerAberto, setScannerAberto] = useState(false)
-  const [scanMsg, setScanMsg] = useState('')
 
   const { data: listaDefault } = useQuery({
     queryKey: ['lista-default'],
@@ -76,7 +76,7 @@ function ListaPage() {
   const invalidateListas = () => qc.invalidateQueries({ queryKey: ['listas'] })
 
   const adicionar = useMutation({
-    mutationFn: () => adicionarItemLista({ data: { productId: produtoId || undefined, customName: customName || undefined, quantity: qty, listId: listaId ?? undefined } }),
+    mutationFn: () => adicionarItemLista({ data: { productId: produtoId || undefined, customName: customName || undefined, quantity: qty, unit: unit === 'kg' ? 'kg' : undefined, listId: listaId ?? undefined } }),
     onSuccess: () => { invalidate(); setModal(false); resetForm() },
   })
   const toggle = useMutation({
@@ -116,7 +116,7 @@ function ListaPage() {
     onSuccess: () => { refetchConfig(); setEditandoOrcamento(false); setOrcamentoInput('') },
   })
 
-  function resetForm() { setBusca(''); setProdutoId(''); setCustomName(''); setQty(1) }
+  function resetForm() { setBusca(''); setProdutoId(''); setCustomName(''); setQty(1); setQtyInput('1'); setUnit('un') }
 
   const pendentes = itens.filter(i => !i.checked)
   const marcados  = itens.filter(i => i.checked)
@@ -229,9 +229,10 @@ function ListaPage() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.375rem', flexWrap: 'wrap' }}>
                         {item.productName ?? item.customName ?? '—'}
-                        {item.quantity && item.quantity > 1 && (
-                          <span className="badge badge-blue">×{item.quantity}</span>
-                        )}
+                        {item.unit === 'kg'
+                          ? <span className="badge badge-blue">{Number(item.quantity ?? 1).toFixed(3).replace('.', ',')} kg</span>
+                          : item.quantity && Number(item.quantity) > 1 && <span className="badge badge-blue">×{item.quantity}</span>
+                        }
                         {alertDisparado && (
                           <span className="badge badge-green" style={{ fontSize: '0.65rem' }}>🔔 Preço atingido!</span>
                         )}
@@ -249,9 +250,11 @@ function ListaPage() {
                     </div>
                     {item.bestPrice != null && (
                       <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: alertDisparado ? 'var(--color-primary)' : 'var(--color-text)', flexShrink: 0, marginRight: '0.25rem' }}>
-                        {item.quantity && item.quantity > 1
-                          ? `${fmt(item.bestPrice * item.quantity)} (${fmt(item.bestPrice)} un)`
-                          : fmt(item.bestPrice)}
+                        {item.unit === 'kg'
+                          ? `${fmt(item.bestPrice * Number(item.quantity ?? 1))} (${fmt(item.bestPrice)}/kg)`
+                          : Number(item.quantity ?? 1) > 1
+                            ? `${fmt(item.bestPrice * Number(item.quantity))} (${fmt(item.bestPrice)} un)`
+                            : fmt(item.bestPrice)}
                       </span>
                     )}
                     {item.productId && (
@@ -541,13 +544,7 @@ function ListaPage() {
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3 style={{ fontWeight: 700 }}>Adicionar item</h3>
-              <div style={{ display: 'flex', gap: '0.25rem' }}>
-                <button className="btn btn-ghost btn-sm" title="Escanear código de barras"
-                  onClick={() => { setScanMsg(''); setScannerAberto(true) }}>
-                  <Camera size={18} />
-                </button>
-                <button className="btn btn-ghost btn-sm" onClick={() => { setModal(false); resetForm() }}><X size={18} /></button>
-              </div>
+              <button className="btn btn-ghost btn-sm" onClick={() => { setModal(false); resetForm() }}><X size={18} /></button>
             </div>
             <div className="modal-body">
               <div className="tab-bar" style={{ marginBottom: '1rem' }}>
@@ -603,15 +600,58 @@ function ListaPage() {
 
               <div className="form-group">
                 <label className="label">Quantidade</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <button type="button" className="btn btn-secondary" style={{ width: '2.5rem', justifyContent: 'center', flexShrink: 0 }}
-                    onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
-                  <input type="number" className="input" min={1} value={qty}
-                    onChange={e => setQty(Math.max(1, parseInt(e.target.value) || 1))}
-                    style={{ textAlign: 'center' }} />
-                  <button type="button" className="btn btn-secondary" style={{ width: '2.5rem', justifyContent: 'center', flexShrink: 0 }}
-                    onClick={() => setQty(q => q + 1)}>+</button>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  {(['un', 'kg'] as const).map(u => (
+                    <button key={u} type="button"
+                      className={`btn btn-sm ${unit === u ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{ flex: 1 }}
+                      onClick={() => {
+                        setUnit(u)
+                        const v = u === 'kg' ? 1 : 1
+                        setQty(v)
+                        setQtyInput(u === 'kg' ? '1,000' : '1')
+                      }}>
+                      {u === 'un' ? 'Unidade' : 'Kg'}
+                    </button>
+                  ))}
                 </div>
+                {unit === 'un' ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <button type="button" className="btn btn-secondary" style={{ width: '2.5rem', justifyContent: 'center', flexShrink: 0 }}
+                      onClick={() => { const v = Math.max(1, qty - 1); setQty(v); setQtyInput(String(v)) }}>−</button>
+                    <input type="number" className="input" min={1} value={qty}
+                      onChange={e => { const v = Math.max(1, parseInt(e.target.value) || 1); setQty(v); setQtyInput(String(v)) }}
+                      style={{ textAlign: 'center' }} />
+                    <button type="button" className="btn btn-secondary" style={{ width: '2.5rem', justifyContent: 'center', flexShrink: 0 }}
+                      onClick={() => { const v = qty + 1; setQty(v); setQtyInput(String(v)) }}>+</button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <button type="button" className="btn btn-secondary" style={{ width: '2.5rem', justifyContent: 'center', flexShrink: 0 }}
+                      onClick={() => { const v = Math.max(0.1, parseFloat((qty - 0.1).toFixed(3))); setQty(v); setQtyInput(String(v).replace('.', ',')) }}>−</button>
+                    <input type="text" className="input" placeholder="0,000"
+                      value={qtyInput}
+                      onChange={e => {
+                        const raw = e.target.value.replace(',', '.')
+                        setQtyInput(e.target.value)
+                        const n = parseFloat(raw)
+                        if (!isNaN(n) && n > 0) setQty(n)
+                      }}
+                      onBlur={() => {
+                        const n = parseFloat(qtyInput.replace(',', '.'))
+                        if (!isNaN(n) && n > 0) {
+                          setQty(n)
+                          setQtyInput(n.toFixed(3).replace('.', ','))
+                        } else {
+                          setQty(0.1)
+                          setQtyInput('0,100')
+                        }
+                      }}
+                      style={{ textAlign: 'center' }} />
+                    <button type="button" className="btn btn-secondary" style={{ width: '2.5rem', justifyContent: 'center', flexShrink: 0 }}
+                      onClick={() => { const v = parseFloat((qty + 0.1).toFixed(3)); setQty(v); setQtyInput(String(v).replace('.', ',')) }}>+</button>
+                  </div>
+                )}
               </div>
             </div>
             <div className="modal-footer">
@@ -624,120 +664,6 @@ function ListaPage() {
         </div>
       )}
 
-      {/* Modal Scanner de código de barras */}
-      {scannerAberto && (
-        <BarcodeScannerModal
-          msg={scanMsg}
-          onClose={() => setScannerAberto(false)}
-          onScan={async (barcode) => {
-            setScanMsg(`Código: ${barcode} — buscando...`)
-            const produto = await buscarProdutoPorCodigoBarras({ data: { barcode } })
-            if (produto) {
-              setProdutoId(produto.id)
-              setBusca(produto.name + (produto.brand ? ` (${produto.brand})` : ''))
-              setScannerAberto(false)
-              setScanMsg('')
-            } else {
-              setScanMsg(`Código ${barcode} não encontrado no catálogo.`)
-            }
-          }}
-        />
-      )}
-    </div>
-  )
-}
-
-interface BarcodeScannerModalProps {
-  onClose: () => void
-  onScan: (barcode: string) => void
-  msg: string
-}
-
-function BarcodeScannerModal({ onClose, onScan, msg }: BarcodeScannerModalProps) {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [error, setError] = useState('')
-  const [scanning, setScanning] = useState(true)
-
-  useEffect(() => {
-    if (!('BarcodeDetector' in window)) {
-      setError('BarcodeDetector não é suportado neste navegador. Use Chrome/Edge em Android ou desktop.')
-      return
-    }
-
-    let stream: MediaStream | null = null
-    let animFrame: number
-    let scanned = false
-
-    const detector = new (window as any).BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'qr_code', 'upc_a', 'upc_e'] })
-
-    const start = async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          videoRef.current.play()
-        }
-        scan()
-      } catch {
-        setError('Permissão de câmera negada ou câmera não disponível.')
-      }
-    }
-
-    const scan = async () => {
-      if (!videoRef.current || scanned) return
-      try {
-        const codes = await detector.detect(videoRef.current)
-        if (codes.length > 0 && !scanned) {
-          scanned = true
-          setScanning(false)
-          onScan(codes[0].rawValue)
-        }
-      } catch {}
-      if (!scanned) animFrame = requestAnimationFrame(scan)
-    }
-
-    start()
-
-    return () => {
-      cancelAnimationFrame(animFrame)
-      stream?.getTracks().forEach(t => t.stop())
-    }
-  }, [])
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: '420px' }} onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3 style={{ fontWeight: 700 }}>Escanear código de barras</h3>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}><X size={18} /></button>
-        </div>
-        <div className="modal-body" style={{ padding: '1rem' }}>
-          {error ? (
-            <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--color-danger)', fontSize: '0.875rem' }}>
-              {error}
-            </div>
-          ) : (
-            <div style={{ position: 'relative', borderRadius: '0.75rem', overflow: 'hidden', background: '#000' }}>
-              <video ref={videoRef} style={{ width: '100%', display: 'block', maxHeight: '280px', objectFit: 'cover' }} muted playsInline />
-              <div style={{
-                position: 'absolute', top: '50%', left: '10%', right: '10%', height: '2px',
-                transform: 'translateY(-50%)', background: 'rgba(22,163,74,0.8)',
-                boxShadow: '0 0 8px rgba(22,163,74,0.6)',
-              }} />
-            </div>
-          )}
-          {msg && (
-            <p style={{ marginTop: '0.75rem', fontSize: '0.875rem', textAlign: 'center', color: msg.includes('não encontrado') ? 'var(--color-danger)' : 'var(--color-primary)', fontWeight: 500 }}>
-              {msg}
-            </p>
-          )}
-          {!error && scanning && !msg && (
-            <p style={{ marginTop: '0.75rem', fontSize: '0.8125rem', textAlign: 'center', color: 'var(--color-text-soft)' }}>
-              Aponte a câmera para o código de barras do produto
-            </p>
-          )}
-        </div>
-      </div>
     </div>
   )
 }

@@ -151,7 +151,7 @@ export const shoppingListItems = pgTable('shopping_list_items', {
   listId: text('list_id').references(() => shoppingLists.id, { onDelete: 'cascade' }),
   productId: text('product_id').references(() => products.id),
   customName: text('custom_name'),
-  quantity: integer('quantity').default(1).notNull(),
+  quantity: numeric('quantity', { precision: 10, scale: 3 }).default('1').notNull(),
   unit: text('unit'),
   checked: boolean('checked').default(false).notNull(),
   alertPrice: numeric('alert_price', { precision: 10, scale: 2 }),
