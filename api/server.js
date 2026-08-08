@@ -4,6 +4,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { drizzle } from 'drizzle-orm/neon-http'
 import { neon } from '@neondatabase/serverless'
 import { pgTable, text, boolean, timestamp } from 'drizzle-orm/pg-core'
+import { eq, and, gte, lte, isNull } from 'drizzle-orm'
 
 // Schema inline — espelha src/db/schema.ts
 const userTable = pgTable('user', {
@@ -52,7 +53,9 @@ const verificationTable = pgTable('verification', {
 const subscriptionsTable = pgTable('subscriptions', {
   userId: text('user_id').primaryKey(),
   status: text('status').notNull(),
+  mpPreapprovalId: text('mp_preapproval_id'),
   trialEndsAt: timestamp('trial_ends_at'),
+  trialWarningSentAt: timestamp('trial_warning_sent_at'),
 })
 
 const db = drizzle(neon(process.env.DATABASE_URL), {
@@ -82,6 +85,184 @@ async function sendEmail(to, subject, html) {
   } catch (err) {
     console.error('[email] erro ao enviar:', err instanceof Error ? err.message : err)
   }
+}
+
+// ─── Mercado Pago — duplicado de src/lib/mercadopago-client.ts (mesmo motivo: este arquivo
+// roda fora do bundle Vite/TS, precisa ser JS puro importável direto pelo Node da Vercel) ────
+
+const MP_API_BASE = 'https://api.mercadopago.com'
+
+async function mpRequest(path, init) {
+  const token = process.env.MP_ACCESS_TOKEN
+  if (!token) throw new Error('MP_ACCESS_TOKEN não configurada')
+  const res = await fetch(`${MP_API_BASE}${path}`, {
+    ...init,
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+  })
+  if (!res.ok) throw new Error(`Mercado Pago API ${res.status} ${path}: ${await res.text()}`)
+  return res.json()
+}
+
+const SUBSCRIPTION_PRICE = Number(process.env.SUBSCRIPTION_PRICE_OVERRIDE) || 19.9
+
+async function createPreapproval(payerEmail, userId, value, startDate, backUrl) {
+  const preapproval = await mpRequest('/preapproval', {
+    method: 'POST',
+    body: JSON.stringify({
+      reason: 'Supermercado Fácil — assinatura mensal',
+      external_reference: userId,
+      payer_email: payerEmail,
+      back_url: backUrl,
+      status: 'pending',
+      auto_recurring: { frequency: 1, frequency_type: 'months', transaction_amount: value, currency_id: 'BRL', start_date: startDate },
+    }),
+  })
+  if (!preapproval?.id || !preapproval?.init_point) {
+    throw new Error(`Resposta inesperada do Mercado Pago ao criar assinatura: ${JSON.stringify(preapproval)}`)
+  }
+  return { preapprovalId: preapproval.id, checkoutUrl: preapproval.init_point }
+}
+
+async function getPreapproval(preapprovalId) {
+  const data = await mpRequest(`/preapproval/${preapprovalId}`)
+  return { status: data.status, initPoint: data.init_point ?? null }
+}
+
+async function verifyWebhookSignature(xSignature, xRequestId, dataId) {
+  const secret = process.env.MP_WEBHOOK_SECRET
+  if (!secret) throw new Error('MP_WEBHOOK_SECRET não configurada')
+  if (!xSignature || !xRequestId) return false
+  const parts = Object.fromEntries(xSignature.split(',').map((p) => p.trim().split('=').map((s) => s.trim())))
+  if (!parts.ts || !parts.v1) return false
+  const manifest = `id:${dataId.toLowerCase()};request-id:${xRequestId};ts:${parts.ts};`
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(manifest))
+  const computed = Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, '0')).join('')
+  return computed === parts.v1
+}
+
+// ─── Webhook do Mercado Pago (POST /api/webhooks/mercadopago) ────────────────────────────────
+// Duplicado de src/routes/api/webhooks/mercadopago.ts — createAPIFileRoute não gera rota
+// funcional nesta versão do TanStack Start (ver nota no topo do arquivo), então o despacho
+// precisa acontecer aqui, igual ao /api/auth.
+
+async function handleMercadoPagoWebhook(request) {
+  let payload = {}
+  try { payload = JSON.parse(await request.text()) } catch { /* alguns eventos só via query string */ }
+
+  const url = new URL(request.url)
+  const type = payload?.type ?? url.searchParams.get('type') ?? ''
+  const dataId = payload?.data?.id ?? url.searchParams.get('data.id') ?? ''
+
+  if (!dataId || !type.includes('preapproval')) return Response.json({ ok: true, ignored: true })
+
+  if (process.env.MP_WEBHOOK_SECRET) {
+    const valid = await verifyWebhookSignature(request.headers.get('x-signature'), request.headers.get('x-request-id'), dataId)
+    if (!valid) return new Response(JSON.stringify({ error: 'invalid signature' }), { status: 401 })
+  }
+
+  const [sub] = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.mpPreapprovalId, dataId)).limit(1)
+  if (!sub) return Response.json({ ok: true, ignored: true, reason: 'assinatura não encontrada' })
+
+  const { status } = await getPreapproval(dataId)
+
+  if (status === 'authorized') {
+    if (sub.status === 'ativa') return Response.json({ ok: true, ignored: true, reason: 'já ativa' })
+    await db.update(subscriptionsTable).set({ status: 'ativa', trialEndsAt: null }).where(eq(subscriptionsTable.userId, sub.userId))
+    const [u] = await db.select({ email: userTable.email, name: userTable.name }).from(userTable).where(eq(userTable.id, sub.userId)).limit(1)
+    if (u) sendEmail(u.email, 'Assinatura confirmada — obrigado!', `<p>Olá, ${u.name}!</p><p>Recebemos seu pagamento. Sua assinatura do Supermercado Fácil está confirmada.</p>`)
+    return Response.json({ ok: true, activated: true })
+  }
+
+  if (status === 'cancelled' || status === 'paused') {
+    if (sub.status !== 'ativa') return Response.json({ ok: true, ignored: true, reason: `status atual: ${sub.status}` })
+    await db.update(subscriptionsTable).set({ status: 'expirada' }).where(eq(subscriptionsTable.userId, sub.userId))
+    const [u] = await db.select({ email: userTable.email, name: userTable.name }).from(userTable).where(eq(userTable.id, sub.userId)).limit(1)
+    if (u) {
+      const checkoutUrl = status === 'paused' ? await getPreapproval(dataId).then((p) => p.initPoint).catch(() => null) : null
+      sendEmail(u.email, 'Cobrança em atraso — acesso bloqueado', `<p>Olá, ${u.name}!</p><p>Não identificamos o pagamento da sua assinatura e o acesso foi bloqueado.</p>${checkoutUrl ? `<p><a href="${checkoutUrl}">${checkoutUrl}</a></p>` : ''}`)
+    }
+    return Response.json({ ok: true, expired: true })
+  }
+
+  return Response.json({ ok: true, ignored: true, reason: `status mp: ${status}` })
+}
+
+// ─── Cron diário (GET /api/cron/sweep) ────────────────────────────────────────────────────────
+// Duplicado de src/routes/api/cron/sweep.ts — mesmo motivo do webhook acima.
+
+async function handleCronSweep(request) {
+  const cronSecret = process.env.CRON_SECRET
+  if (cronSecret && request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+    return new Response('unauthorized', { status: 401 })
+  }
+
+  const now = new Date()
+  const in1Day = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+
+  const warning = await db.select({
+    userId: subscriptionsTable.userId, trialEndsAt: subscriptionsTable.trialEndsAt,
+    mpPreapprovalId: subscriptionsTable.mpPreapprovalId, email: userTable.email, name: userTable.name,
+  })
+    .from(subscriptionsTable).innerJoin(userTable, eq(userTable.id, subscriptionsTable.userId))
+    .where(and(eq(subscriptionsTable.status, 'trial'), gte(subscriptionsTable.trialEndsAt, now), lte(subscriptionsTable.trialEndsAt, in1Day), isNull(subscriptionsTable.trialWarningSentAt)))
+
+  for (const t of warning) {
+    let checkoutUrl = null
+    try {
+      if (!t.mpPreapprovalId) {
+        const sub = await createPreapproval(t.email, t.userId, SUBSCRIPTION_PRICE, t.trialEndsAt.toISOString(), `${APP_URL}/assinatura`)
+        await db.update(subscriptionsTable).set({ mpPreapprovalId: sub.preapprovalId }).where(eq(subscriptionsTable.userId, t.userId))
+        checkoutUrl = sub.checkoutUrl
+      } else {
+        checkoutUrl = await getPreapproval(t.mpPreapprovalId).then((p) => p.initPoint).catch(() => null)
+      }
+    } catch (err) { console.error(`[cron] falha ao criar assinatura MP pra ${t.userId}:`, err instanceof Error ? err.message : err) }
+    if (checkoutUrl) await sendEmail(t.email, 'Seu teste grátis termina amanhã', `<p>Olá, ${t.name}!</p><p>Seu teste grátis do Supermercado Fácil termina amanhã.</p><p><a href="${checkoutUrl}">${checkoutUrl}</a></p>`)
+    await db.update(subscriptionsTable).set({ trialWarningSentAt: now }).where(eq(subscriptionsTable.userId, t.userId))
+  }
+
+  const expiring = await db.select({
+    userId: subscriptionsTable.userId, trialEndsAt: subscriptionsTable.trialEndsAt,
+    mpPreapprovalId: subscriptionsTable.mpPreapprovalId, email: userTable.email, name: userTable.name,
+  })
+    .from(subscriptionsTable).innerJoin(userTable, eq(userTable.id, subscriptionsTable.userId))
+    .where(and(eq(subscriptionsTable.status, 'trial'), lte(subscriptionsTable.trialEndsAt, now)))
+
+  for (const t of expiring) {
+    let checkoutUrl = null
+    let preapprovalId = t.mpPreapprovalId
+    try {
+      if (!preapprovalId) {
+        const sub = await createPreapproval(t.email, t.userId, SUBSCRIPTION_PRICE, t.trialEndsAt.toISOString(), `${APP_URL}/assinatura`)
+        preapprovalId = sub.preapprovalId
+        checkoutUrl = sub.checkoutUrl
+        await db.update(subscriptionsTable).set({ mpPreapprovalId: preapprovalId }).where(eq(subscriptionsTable.userId, t.userId))
+      } else {
+        checkoutUrl = await getPreapproval(preapprovalId).then((p) => p.initPoint).catch(() => null)
+      }
+    } catch (err) { console.error(`[cron] falha ao criar assinatura MP (fallback) pra ${t.userId}:`, err instanceof Error ? err.message : err) }
+    if (checkoutUrl) await sendEmail(t.email, 'Seu teste grátis expirou hoje', `<p>Olá, ${t.name}!</p><p>Seu teste grátis do Supermercado Fácil venceu hoje. Assine pra continuar:</p><p><a href="${checkoutUrl}">${checkoutUrl}</a></p>`)
+    await db.update(subscriptionsTable).set({ status: 'expirada' }).where(eq(subscriptionsTable.userId, t.userId))
+  }
+
+  const overdueCandidates = await db.select({
+    userId: subscriptionsTable.userId, mpPreapprovalId: subscriptionsTable.mpPreapprovalId, email: userTable.email, name: userTable.name,
+  })
+    .from(subscriptionsTable).innerJoin(userTable, eq(userTable.id, subscriptionsTable.userId))
+    .where(eq(subscriptionsTable.status, 'ativa'))
+
+  let overdueCount = 0
+  for (const t of overdueCandidates) {
+    if (!t.mpPreapprovalId) continue
+    const { status, initPoint } = await getPreapproval(t.mpPreapprovalId).catch(() => ({ status: 'authorized', initPoint: null }))
+    if (status === 'authorized') continue
+    await db.update(subscriptionsTable).set({ status: 'expirada' }).where(eq(subscriptionsTable.userId, t.userId))
+    overdueCount++
+    await sendEmail(t.email, 'Cobrança em atraso — acesso bloqueado', `<p>Olá, ${t.name}!</p><p>Não identificamos o pagamento da sua assinatura.</p>${status === 'paused' && initPoint ? `<p><a href="${initPoint}">${initPoint}</a></p>` : ''}`)
+  }
+
+  return Response.json({ ok: true, warned: warning.length, expired: expiring.length, overdue: overdueCount })
 }
 
 const auth = betterAuth({
@@ -200,6 +381,10 @@ export default async function handler(req, res) {
         const body = await response.clone().text()
         console.error('[auth]', response.status, req.url, body)
       }
+    } else if (req.url?.startsWith('/api/webhooks/mercadopago')) {
+      response = await handleMercadoPagoWebhook(request)
+    } else if (req.url?.startsWith('/api/cron/sweep')) {
+      response = await handleCronSweep(request)
     } else {
       response = await server.fetch(request)
     }
