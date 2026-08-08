@@ -8,15 +8,36 @@ import { createPreapproval, getPreapproval, SUBSCRIPTION_PRICE } from '#/lib/mer
 const APP_URL = process.env.BETTER_AUTH_URL ||
   (process.env.VERCEL ? 'https://supermercado.nexusteck.com.br' : 'http://localhost:3000')
 
+const TRIAL_DAYS = 7
+
+// Contas criadas antes do sistema de assinatura existir (ou qualquer falha silenciosa do
+// databaseHooks — ele está duplicado em src/lib/auth.ts e api/server.js, ver nota lá) não têm
+// linha em subscriptions. Em vez de quebrar o fluxo, cria o trial na hora.
+async function getOrCreateSubscription(userId: string) {
+  const [existing] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1)
+  if (existing) return existing
+
+  const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000)
+  const [created] = await db.insert(subscriptions)
+    .values({ userId, status: 'trial', trialEndsAt })
+    .onConflictDoNothing()
+    .returning()
+  if (created) return created
+
+  // Corrida rara: outra requisição criou entre o select e o insert acima.
+  const [row] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1)
+  return row
+}
+
 // Preço/trial pra tela pública (landing) — nunca duplicar à mão o que já está em
 // mercadopago-client.ts/auth.ts.
 export const getPublicPricing = createServerFn({ method: 'GET' }).handler(async () => {
-  return { price: SUBSCRIPTION_PRICE, trialDays: 7 }
+  return { price: SUBSCRIPTION_PRICE, trialDays: TRIAL_DAYS }
 })
 
 export const getAssinaturaInfo = createServerFn({ method: 'GET' }).handler(async ({ request }) => {
   const userId = await requireUserId(request, { allowExpired: true })
-  const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1)
+  const sub = await getOrCreateSubscription(userId)
 
   let checkoutUrl: string | null = null
   if (sub?.mpPreapprovalId) {
@@ -35,8 +56,8 @@ export const getAssinaturaInfo = createServerFn({ method: 'GET' }).handler(async
 // fim do trial (mesma regra do cron) — pagar antes só garante o link mais cedo.
 export const iniciarAssinatura = createServerFn({ method: 'POST' }).handler(async ({ request }) => {
   const userId = await requireUserId(request, { allowExpired: true })
-  const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1)
-  if (!sub) throw new Error('Assinatura não encontrada')
+  const sub = await getOrCreateSubscription(userId)
+  if (!sub) throw new Error('Não foi possível preparar a assinatura — tente novamente')
 
   if (sub.mpPreapprovalId) {
     const { initPoint } = await getPreapproval(sub.mpPreapprovalId)
