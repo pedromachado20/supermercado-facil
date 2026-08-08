@@ -88,17 +88,6 @@ export const criarProduto = createServerFn({ method: 'POST' })
     return p
   })
 
-export const criarEntradaPreco = createServerFn({ method: 'POST' })
-  .inputValidator((d: { productId: string; supermarketId: string; price: string; pricePerUnit?: string; sourceType: 'link' | 'photo' | 'pdf' | 'manual'; sourceUrl?: string }) => d)
-  .handler(async ({ data }) => {
-    const [e] = await db.insert(priceEntries).values({
-      productId: data.productId, supermarketId: data.supermarketId,
-      price: data.price, pricePerUnit: data.pricePerUnit || null,
-      sourceType: data.sourceType, sourceUrl: data.sourceUrl || null,
-    }).returning()
-    return e
-  })
-
 export const atualizarProduto = createServerFn({ method: 'POST' })
   .inputValidator((d: { id: string; name: string; brand?: string; categoryId?: string; unit?: string }) => d)
   .handler(async ({ data, request }) => {

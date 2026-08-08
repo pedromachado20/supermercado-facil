@@ -48,17 +48,83 @@ const verificationTable = pgTable('verification', {
   createdAt: timestamp('created_at'),
   updatedAt: timestamp('updated_at'),
 })
+// status é um enum no Postgres (subscription_status) — texto aqui é suficiente, o banco valida.
+const subscriptionsTable = pgTable('subscriptions', {
+  userId: text('user_id').primaryKey(),
+  status: text('status').notNull(),
+  trialEndsAt: timestamp('trial_ends_at'),
+})
 
 const db = drizzle(neon(process.env.DATABASE_URL), {
   schema: { user: userTable, session: sessionTable, account: accountTable, verification: verificationTable },
 })
+
+const APP_URL = process.env.BETTER_AUTH_URL || 'https://supermercado.nexusteck.com.br'
+const TRIAL_DAYS = 7
+const RESEND_API_KEY = process.env.RESEND_API_KEY
+const EMAIL_FROM = process.env.EMAIL_FROM || 'Supermercado Fácil <onboarding@nexusteck.com.br>'
+const SUPPORT_EMAIL = 'nexusteckbr@gmail.com'
+
+// Duplicado de src/lib/email.ts — este arquivo roda fora do bundle Vite/TS (handler Node cru
+// da Vercel), por isso não pode importar TS. Mantém só o essencial (texto simples, sem HTML rico).
+async function sendEmail(to, subject, html) {
+  if (!RESEND_API_KEY) {
+    console.warn(`[email] RESEND_API_KEY não configurada — pulando envio para ${to}: ${subject}`)
+    return
+  }
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: EMAIL_FROM, to, subject, html }),
+    })
+    if (!res.ok) console.error(`[email] Falha ao enviar para ${to}: ${res.status} ${await res.text()}`)
+  } catch (err) {
+    console.error('[email] erro ao enviar:', err instanceof Error ? err.message : err)
+  }
+}
 
 const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema: { user: userTable, session: sessionTable, account: accountTable, verification: verificationTable },
   }),
-  emailAndPassword: { enabled: true },
+  emailAndPassword: {
+    enabled: true,
+    // Espelha src/lib/auth.ts — a página de redefinição é a nossa própria (/redefinir-senha,
+    // lê ?token= da URL), não a rota default do better-auth.
+    sendResetPassword: async ({ user, token }) => {
+      const resetUrl = `${APP_URL}/redefinir-senha?token=${token}`
+      await sendEmail(
+        user.email,
+        'Redefinir sua senha — Supermercado Fácil',
+        `<p>Olá,</p><p>Recebemos um pedido pra redefinir a senha da sua conta no Supermercado Fácil.</p>
+         <p><a href="${resetUrl}">${resetUrl}</a></p>
+         <p>Se você não pediu isso, pode ignorar este e-mail — sua senha continua a mesma.</p>
+         <p style="margin-top:24px;padding-top:16px;border-top:1px solid #ddd;font-size:13px;color:#666">Dúvidas? Fale com a gente por e-mail em <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>`,
+      )
+    },
+  },
+  // Espelha src/lib/auth.ts — cria a assinatura em teste grátis assim que o usuário é criado
+  // (cadastro por e-mail/senha ou login social). Este é o auth que de fato roda em produção
+  // pra /api/auth/* (ver handler() abaixo), então o hook precisa estar duplicado aqui também.
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000)
+          await db.insert(subscriptionsTable).values({ userId: user.id, status: 'trial', trialEndsAt })
+          await sendEmail(
+            user.email,
+            'Seu Supermercado Fácil está pronto — teste grátis ativado!',
+            `<p>Olá, ${user.name}!</p><p>Sua conta foi criada, em teste grátis por ${TRIAL_DAYS} dias.</p>
+             <p>Importe os encartes ou links dos supermercados que você usa, compare preços e monte sua lista de compras pelo menor valor.</p>
+             <p style="margin-top:24px;padding-top:16px;border-top:1px solid #ddd;font-size:13px;color:#666">Dúvidas? Fale com a gente por e-mail em <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>`,
+          )
+        },
+      },
+    },
+  },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -74,9 +140,10 @@ const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL || 'https://supermercado-facil.vercel.app',
+  baseURL: process.env.BETTER_AUTH_URL || 'https://supermercado.nexusteck.com.br',
   trustedOrigins: [
     'http://localhost:3000',
+    'https://supermercado.nexusteck.com.br',
     'https://supermercado-facil.vercel.app',
   ],
   session: {

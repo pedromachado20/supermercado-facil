@@ -19,7 +19,7 @@ function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      const result = await signIn.social({ provider: 'google', callbackURL: '/' })
+      const result = await signIn.social({ provider: 'google', callbackURL: '/dashboard' })
       if (result?.error) {
         setError('Google: ' + (result.error.message ?? JSON.stringify(result.error)))
         setLoading(false)
@@ -40,7 +40,7 @@ function LoginPage() {
       if (res.error) {
         setError('E-mail ou senha incorretos.')
       } else {
-        navigate({ to: '/' })
+        navigate({ to: '/dashboard' })
       }
     } catch {
       setError('Erro ao entrar. Tente novamente.')

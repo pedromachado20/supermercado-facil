@@ -12,6 +12,7 @@ import {
 
 export const sourceTypeEnum = pgEnum('source_type', ['link', 'photo', 'pdf', 'manual'])
 export const jobStatusEnum = pgEnum('job_status', ['pending', 'running', 'completed', 'failed'])
+export const subscriptionStatusEnum = pgEnum('subscription_status', ['trial', 'ativa', 'expirada'])
 
 // ─── Auth (better-auth) ───────────────────────────────────────────────────────
 
@@ -160,6 +161,17 @@ export const shoppingListItems = pgTable('shopping_list_items', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 })
 
+// ─── Assinatura (trial + cobrança recorrente via Mercado Pago) ────────────────
+
+export const subscriptions = pgTable('subscriptions', {
+  userId: text('user_id').primaryKey().references(() => user.id, { onDelete: 'cascade' }),
+  status: subscriptionStatusEnum('status').notNull().default('trial'),
+  mpPreapprovalId: text('mp_preapproval_id').unique(),
+  trialEndsAt: timestamp('trial_ends_at'),
+  trialWarningSentAt: timestamp('trial_warning_sent_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
 // ─── Configurações do usuário ─────────────────────────────────────────────────
 
 export const userSettings = pgTable('user_settings', {
@@ -172,6 +184,7 @@ export const userSettings = pgTable('user_settings', {
 
 export const recipes = pgTable('recipes', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id'),
   name: text('name').notNull(),
   description: text('description'),
   instructions: text('instructions'),

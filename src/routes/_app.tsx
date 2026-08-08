@@ -3,11 +3,14 @@ import { signOut } from '#/lib/auth-client'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { auth } from '#/lib/auth'
+import { db } from '#/db'
+import { subscriptions } from '#/db/schema'
+import { eq } from 'drizzle-orm'
 import { useQuery } from '@tanstack/react-query'
 import {
   Store, Package, Tag, UploadCloud,
   LayoutDashboard, BarChart2, LogOut, ChefHat,
-  Menu, X, ShoppingBag, ShoppingCart, Sun, Moon, BookOpen
+  Menu, X, ShoppingBag, ShoppingCart, Sun, Moon, BookOpen, CreditCard
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -21,6 +24,11 @@ const checkAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const request = getRequest()
   const s = await auth.api.getSession({ headers: request.headers })
   if (!s) throw redirect({ to: '/login' })
+
+  const [sub] = await db.select({ status: subscriptions.status })
+    .from(subscriptions).where(eq(subscriptions.userId, s.user.id)).limit(1)
+  if (sub?.status === 'expirada') throw redirect({ to: '/assinatura-expirada' })
+
   return null
 })
 
@@ -32,7 +40,7 @@ export const Route = createFileRoute('/_app')({
 })
 
 const NAV = [
-  { to: '/',           label: 'Dashboard',       icon: LayoutDashboard },
+  { to: '/dashboard',  label: 'Dashboard',       icon: LayoutDashboard },
   { to: '/mercados',   label: 'Supermercados',   icon: Store },
   { to: '/produtos',   label: 'Produtos',        icon: Package },
   { to: '/categorias', label: 'Categorias',      icon: Tag },
@@ -41,6 +49,7 @@ const NAV = [
   { to: '/receitas',   label: 'Receitas',        icon: ChefHat },
   { to: '/relatorios', label: 'Relatórios',      icon: BarChart2 },
   { to: '/manual',    label: 'Manual',           icon: BookOpen },
+  { to: '/assinatura', label: 'Assinatura',      icon: CreditCard },
 ]
 
 function useDarkMode() {
@@ -88,7 +97,7 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
       {/* Nav */}
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.125rem', flex: 1 }}>
         {NAV.map(({ to, label, icon: Icon }) => {
-          const active = to === '/' ? path === '/' : path.startsWith(to)
+          const active = path.startsWith(to)
           return (
             <Link key={to} to={to} className={`sidebar-link${active ? ' active' : ''}`} onClick={onClose}>
               <Icon size={17} />

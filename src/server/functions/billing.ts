@@ -1,0 +1,56 @@
+import { createServerFn } from '@tanstack/react-start'
+import { db } from '#/db'
+import { subscriptions, user } from '#/db/schema'
+import { eq } from 'drizzle-orm'
+import { requireUserId } from '#/server/get-user'
+import { createPreapproval, getPreapproval, SUBSCRIPTION_PRICE } from '#/lib/mercadopago-client'
+
+const APP_URL = process.env.BETTER_AUTH_URL ||
+  (process.env.VERCEL ? 'https://supermercado.nexusteck.com.br' : 'http://localhost:3000')
+
+// Preço/trial pra tela pública (landing) — nunca duplicar à mão o que já está em
+// mercadopago-client.ts/auth.ts.
+export const getPublicPricing = createServerFn({ method: 'GET' }).handler(async () => {
+  return { price: SUBSCRIPTION_PRICE, trialDays: 7 }
+})
+
+export const getAssinaturaInfo = createServerFn({ method: 'GET' }).handler(async ({ request }) => {
+  const userId = await requireUserId(request, { allowExpired: true })
+  const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1)
+
+  let checkoutUrl: string | null = null
+  if (sub?.mpPreapprovalId) {
+    checkoutUrl = await getPreapproval(sub.mpPreapprovalId).then(p => p.initPoint).catch(() => null)
+  }
+
+  return {
+    status: sub?.status ?? 'trial',
+    trialEndsAt: sub?.trialEndsAt ? sub.trialEndsAt.toISOString() : null,
+    checkoutUrl,
+  }
+})
+
+// Permite ao usuário optar por assinar antes do fim do trial, em vez de esperar o cron gerar
+// a cobrança automaticamente perto do vencimento. A data da primeira cobrança continua sendo o
+// fim do trial (mesma regra do cron) — pagar antes só garante o link mais cedo.
+export const iniciarAssinatura = createServerFn({ method: 'POST' }).handler(async ({ request }) => {
+  const userId = await requireUserId(request, { allowExpired: true })
+  const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1)
+  if (!sub) throw new Error('Assinatura não encontrada')
+
+  if (sub.mpPreapprovalId) {
+    const { initPoint } = await getPreapproval(sub.mpPreapprovalId)
+    return { checkoutUrl: initPoint }
+  }
+  if (sub.status !== 'trial') throw new Error('Assinatura não está em teste grátis')
+
+  const [u] = await db.select({ email: user.email }).from(user).where(eq(user.id, userId)).limit(1)
+  if (!u) throw new Error('Usuário não encontrado')
+
+  const startDate = (sub.trialEndsAt ?? new Date()).toISOString()
+  const { preapprovalId, checkoutUrl } = await createPreapproval(
+    u.email, userId, SUBSCRIPTION_PRICE, startDate, `${APP_URL}/assinatura`,
+  )
+  await db.update(subscriptions).set({ mpPreapprovalId: preapprovalId }).where(eq(subscriptions.userId, userId))
+  return { checkoutUrl }
+})

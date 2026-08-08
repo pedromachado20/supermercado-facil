@@ -26,7 +26,7 @@ function RegistroPage() {
         console.error('better-auth error:', JSON.stringify(res.error))
         setError(res.error.message || `Erro ${res.error.status ?? ''}: ${res.error.code ?? 'desconhecido'}`)
       } else {
-        navigate({ to: '/' })
+        navigate({ to: '/dashboard' })
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar conta. Tente novamente.')

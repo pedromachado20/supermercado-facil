@@ -4,5 +4,8 @@
   "outputDirectory": "dist/client",
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/server" }
+  ],
+  "crons": [
+    { "path": "/api/cron/sweep", "schedule": "0 12 * * *" }
   ]
 }

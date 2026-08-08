@@ -6,7 +6,7 @@ import { listarCategorias } from '#/server/functions/categorias'
 import { Store, Package, Tag, TrendingDown, UploadCloud, ShoppingCart, ArrowRight } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/_app/')({
+export const Route = createFileRoute('/_app/dashboard')({
   component: Dashboard,
 })
 

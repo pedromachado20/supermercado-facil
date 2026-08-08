@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/db'
 import { recipes, recipeIngredients } from '#/db/schema'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, and } from 'drizzle-orm'
+import { requireUserId } from '#/server/get-user'
 import { ChefHat, Plus, Trash2, X, Printer, ChevronDown, ChevronUp, FolderPlus, Check, Pencil, Clock, Users, UtensilsCrossed } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -23,27 +24,37 @@ type Ingredient = { id: string; name: string; quantity: string | null; unit: str
 
 // ── Server Functions ──────────────────────────────────────────────────────────
 
-const listarReceitas = createServerFn({ method: 'GET' }).handler(async () => {
+const listarReceitas = createServerFn({ method: 'GET' }).handler(async ({ request }) => {
+  const userId = await requireUserId(request)
   return db.select({
     id: recipes.id, name: recipes.name, category: recipes.category,
     description: recipes.description, instructions: recipes.instructions,
     servings: recipes.servings, prepTimeMinutes: recipes.prepTimeMinutes,
     cookTimeMinutes: recipes.cookTimeMinutes,
-  }).from(recipes).orderBy(desc(recipes.createdAt))
+  }).from(recipes).where(eq(recipes.userId, userId)).orderBy(desc(recipes.createdAt))
 })
 
 const buscarIngredientes = createServerFn({ method: 'POST' })
   .inputValidator((d: { recipeId: string }) => d)
-  .handler(async ({ data }) =>
-    db.select().from(recipeIngredients)
-      .where(eq(recipeIngredients.recipeId, data.recipeId))
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    return db.select({
+      id: recipeIngredients.id, name: recipeIngredients.name,
+      quantity: recipeIngredients.quantity, unit: recipeIngredients.unit,
+      sortOrder: recipeIngredients.sortOrder,
+    })
+      .from(recipeIngredients)
+      .innerJoin(recipes, eq(recipeIngredients.recipeId, recipes.id))
+      .where(and(eq(recipeIngredients.recipeId, data.recipeId), eq(recipes.userId, userId)))
       .orderBy(recipeIngredients.sortOrder)
-  )
+  })
 
 const criarReceita = createServerFn({ method: 'POST' })
   .inputValidator((d: { name: string; instructions: string; category?: string; description?: string; servings?: number; prepTimeMinutes?: number; cookTimeMinutes?: number }) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
     const [rec] = await db.insert(recipes).values({
+      userId,
       name: data.name, instructions: data.instructions || null,
       category: data.category || null, description: data.description || null,
       servings: data.servings || null, prepTimeMinutes: data.prepTimeMinutes || null,
@@ -54,8 +65,9 @@ const criarReceita = createServerFn({ method: 'POST' })
 
 const excluirReceita = createServerFn({ method: 'POST' })
   .inputValidator((d: { id: string }) => d)
-  .handler(async ({ data }) => {
-    await db.delete(recipes).where(eq(recipes.id, data.id))
+  .handler(async ({ data, request }) => {
+    const userId = await requireUserId(request)
+    await db.delete(recipes).where(and(eq(recipes.id, data.id), eq(recipes.userId, userId)))
     return { ok: true }
   })
 

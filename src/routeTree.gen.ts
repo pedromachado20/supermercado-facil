@@ -13,16 +13,19 @@ import { Route as RegistroRouteImport } from './routes/registro'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
+import { Route as AssinaturaExpiradaRouteImport } from './routes/assinatura-expirada'
 import { Route as AppRouteImport } from './routes/_app'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRelatoriosRouteImport } from './routes/_app/relatorios'
 import { Route as AppReceitasRouteImport } from './routes/_app/receitas'
 import { Route as AppProdutosRouteImport } from './routes/_app/produtos'
 import { Route as AppMercadosRouteImport } from './routes/_app/mercados'
+import { Route as AppManualRouteImport } from './routes/_app/manual'
 import { Route as AppListaRouteImport } from './routes/_app/lista'
 import { Route as AppImportarRouteImport } from './routes/_app/importar'
-import { Route as AppManualRouteImport } from './routes/_app/manual'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppCategoriasRouteImport } from './routes/_app/categorias'
+import { Route as AppAssinaturaRouteImport } from './routes/_app/assinatura'
 
 const RegistroRoute = RegistroRouteImport.update({
   id: '/registro',
@@ -44,14 +47,19 @@ const EsqueciSenhaRoute = EsqueciSenhaRouteImport.update({
   path: '/esqueci-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssinaturaExpiradaRoute = AssinaturaExpiradaRouteImport.update({
+  id: '/assinatura-expirada',
+  path: '/assinatura-expirada',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
   id: '/relatorios',
@@ -73,6 +81,11 @@ const AppMercadosRoute = AppMercadosRouteImport.update({
   path: '/mercados',
   getParentRoute: () => AppRoute,
 } as any)
+const AppManualRoute = AppManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppListaRoute = AppListaRouteImport.update({
   id: '/lista',
   path: '/lista',
@@ -83,9 +96,9 @@ const AppImportarRoute = AppImportarRouteImport.update({
   path: '/importar',
   getParentRoute: () => AppRoute,
 } as any)
-const AppManualRoute = AppManualRouteImport.update({
-  id: '/manual',
-  path: '/manual',
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCategoriasRoute = AppCategoriasRouteImport.update({
@@ -93,105 +106,130 @@ const AppCategoriasRoute = AppCategoriasRouteImport.update({
   path: '/categorias',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAssinaturaRoute = AppAssinaturaRouteImport.update({
+  id: '/assinatura',
+  path: '/assinatura',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
+  '/': typeof IndexRoute
+  '/assinatura-expirada': typeof AssinaturaExpiradaRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/registro': typeof RegistroRoute
+  '/assinatura': typeof AppAssinaturaRoute
   '/categorias': typeof AppCategoriasRoute
+  '/dashboard': typeof AppDashboardRoute
   '/importar': typeof AppImportarRoute
   '/lista': typeof AppListaRoute
+  '/manual': typeof AppManualRoute
   '/mercados': typeof AppMercadosRoute
   '/produtos': typeof AppProdutosRoute
   '/receitas': typeof AppReceitasRoute
   '/relatorios': typeof AppRelatoriosRoute
-  '/manual': typeof AppManualRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/assinatura-expirada': typeof AssinaturaExpiradaRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/registro': typeof RegistroRoute
+  '/assinatura': typeof AppAssinaturaRoute
   '/categorias': typeof AppCategoriasRoute
+  '/dashboard': typeof AppDashboardRoute
   '/importar': typeof AppImportarRoute
   '/lista': typeof AppListaRoute
+  '/manual': typeof AppManualRoute
   '/mercados': typeof AppMercadosRoute
   '/produtos': typeof AppProdutosRoute
   '/receitas': typeof AppReceitasRoute
   '/relatorios': typeof AppRelatoriosRoute
-  '/manual': typeof AppManualRoute
-  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/assinatura-expirada': typeof AssinaturaExpiradaRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/registro': typeof RegistroRoute
+  '/_app/assinatura': typeof AppAssinaturaRoute
   '/_app/categorias': typeof AppCategoriasRoute
+  '/_app/dashboard': typeof AppDashboardRoute
   '/_app/importar': typeof AppImportarRoute
   '/_app/lista': typeof AppListaRoute
+  '/_app/manual': typeof AppManualRoute
   '/_app/mercados': typeof AppMercadosRoute
   '/_app/produtos': typeof AppProdutosRoute
   '/_app/receitas': typeof AppReceitasRoute
   '/_app/relatorios': typeof AppRelatoriosRoute
-  '/_app/manual': typeof AppManualRoute
-  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/assinatura-expirada'
     | '/esqueci-senha'
     | '/login'
     | '/redefinir-senha'
     | '/registro'
+    | '/assinatura'
     | '/categorias'
+    | '/dashboard'
     | '/importar'
     | '/lista'
+    | '/manual'
     | '/mercados'
     | '/produtos'
     | '/receitas'
     | '/relatorios'
-    | '/manual'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
+    | '/assinatura-expirada'
     | '/esqueci-senha'
     | '/login'
     | '/redefinir-senha'
     | '/registro'
+    | '/assinatura'
     | '/categorias'
+    | '/dashboard'
     | '/importar'
     | '/lista'
+    | '/manual'
     | '/mercados'
     | '/produtos'
     | '/receitas'
     | '/relatorios'
-    | '/manual'
-    | '/'
   id:
     | '__root__'
+    | '/'
     | '/_app'
+    | '/assinatura-expirada'
     | '/esqueci-senha'
     | '/login'
     | '/redefinir-senha'
     | '/registro'
+    | '/_app/assinatura'
     | '/_app/categorias'
+    | '/_app/dashboard'
     | '/_app/importar'
     | '/_app/lista'
+    | '/_app/manual'
     | '/_app/mercados'
     | '/_app/produtos'
     | '/_app/receitas'
     | '/_app/relatorios'
-    | '/_app/manual'
-    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  AssinaturaExpiradaRoute: typeof AssinaturaExpiradaRoute
   EsqueciSenhaRoute: typeof EsqueciSenhaRoute
   LoginRoute: typeof LoginRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
@@ -228,6 +266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EsqueciSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assinatura-expirada': {
+      id: '/assinatura-expirada'
+      path: '/assinatura-expirada'
+      fullPath: '/assinatura-expirada'
+      preLoaderRoute: typeof AssinaturaExpiradaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app': {
       id: '/_app'
       path: ''
@@ -235,25 +280,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/': {
-      id: '/_app/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/relatorios': {
       id: '/_app/relatorios'
       path: '/relatorios'
       fullPath: '/relatorios'
       preLoaderRoute: typeof AppRelatoriosRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/manual': {
-      id: '/_app/manual'
-      path: '/manual'
-      fullPath: '/manual'
-      preLoaderRoute: typeof AppManualRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/receitas': {
@@ -277,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMercadosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manual': {
+      id: '/_app/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof AppManualRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/lista': {
       id: '/_app/lista'
       path: '/lista'
@@ -291,6 +336,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppImportarRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/categorias': {
       id: '/_app/categorias'
       path: '/categorias'
@@ -298,11 +350,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCategoriasRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/assinatura': {
+      id: '/_app/assinatura'
+      path: '/assinatura'
+      fullPath: '/assinatura'
+      preLoaderRoute: typeof AppAssinaturaRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppAssinaturaRoute: typeof AppAssinaturaRoute
   AppCategoriasRoute: typeof AppCategoriasRoute
+  AppDashboardRoute: typeof AppDashboardRoute
   AppImportarRoute: typeof AppImportarRoute
   AppListaRoute: typeof AppListaRoute
   AppManualRoute: typeof AppManualRoute
@@ -310,11 +371,12 @@ interface AppRouteChildren {
   AppProdutosRoute: typeof AppProdutosRoute
   AppReceitasRoute: typeof AppReceitasRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
-  AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAssinaturaRoute: AppAssinaturaRoute,
   AppCategoriasRoute: AppCategoriasRoute,
+  AppDashboardRoute: AppDashboardRoute,
   AppImportarRoute: AppImportarRoute,
   AppListaRoute: AppListaRoute,
   AppManualRoute: AppManualRoute,
@@ -322,13 +384,14 @@ const AppRouteChildren: AppRouteChildren = {
   AppProdutosRoute: AppProdutosRoute,
   AppReceitasRoute: AppReceitasRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
-  AppIndexRoute: AppIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  AssinaturaExpiradaRoute: AssinaturaExpiradaRoute,
   EsqueciSenhaRoute: EsqueciSenhaRoute,
   LoginRoute: LoginRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
