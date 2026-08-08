@@ -109,7 +109,12 @@ function LandingPage() {
       </section>
 
       <footer style={{ textAlign: 'center', padding: '1.5rem', fontSize: '0.8125rem', color: 'var(--color-text-soft)' }}>
-        Supermercado Fácil — dúvidas em <a href="mailto:nexusteckbr@gmail.com" style={{ color: 'var(--color-primary)' }}>nexusteckbr@gmail.com</a>
+        <p>Supermercado Fácil — dúvidas em <a href="mailto:nexusteckbr@gmail.com" style={{ color: 'var(--color-primary)' }}>nexusteckbr@gmail.com</a></p>
+        <p style={{ marginTop: '0.375rem' }}>
+          <Link to="/termos" style={{ color: 'var(--color-text-soft)' }}>Termos de Uso</Link>
+          {' · '}
+          <Link to="/privacidade" style={{ color: 'var(--color-text-soft)' }}>Política de Privacidade</Link>
+        </p>
       </footer>
     </div>
   )

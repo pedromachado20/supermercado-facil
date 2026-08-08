@@ -131,7 +131,13 @@ function RegistroPage() {
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.875rem', color: 'var(--color-text-soft)' }}>
+        <p style={{ textAlign: 'center', marginTop: '0.875rem', fontSize: '0.75rem', color: 'var(--color-text-soft)' }}>
+          Ao criar conta você concorda com os{' '}
+          <Link to="/termos" style={{ color: 'var(--color-primary)' }}>Termos de Uso</Link> e a{' '}
+          <Link to="/privacidade" style={{ color: 'var(--color-primary)' }}>Política de Privacidade</Link>.
+        </p>
+
+        <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.875rem', color: 'var(--color-text-soft)' }}>
           Já tem conta?{' '}
           <Link to="/login" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}>
             Entrar
