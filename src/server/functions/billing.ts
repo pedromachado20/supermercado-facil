@@ -54,3 +54,18 @@ export const iniciarAssinatura = createServerFn({ method: 'POST' }).handler(asyn
   await db.update(subscriptions).set({ mpPreapprovalId: preapprovalId }).where(eq(subscriptions.userId, userId))
   return { checkoutUrl }
 })
+
+// Confere o status direto na API do Mercado Pago sem esperar o webhook/cron — pro usuário
+// que acabou de pagar e quer ver o acesso liberado na hora, sem precisar recarregar depois.
+export const verificarPagamento = createServerFn({ method: 'POST' }).handler(async ({ request }) => {
+  const userId = await requireUserId(request, { allowExpired: true })
+  const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1)
+  if (!sub?.mpPreapprovalId) throw new Error('Nenhuma assinatura encontrada')
+
+  const { status } = await getPreapproval(sub.mpPreapprovalId)
+  const pago = status === 'authorized'
+  if (pago && sub.status !== 'ativa') {
+    await db.update(subscriptions).set({ status: 'ativa', trialEndsAt: null }).where(eq(subscriptions.userId, userId))
+  }
+  return { pago }
+})

@@ -13,7 +13,6 @@ import { Route as RegistroRouteImport } from './routes/registro'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
-import { Route as AssinaturaExpiradaRouteImport } from './routes/assinatura-expirada'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRelatoriosRouteImport } from './routes/_app/relatorios'
@@ -45,11 +44,6 @@ const LoginRoute = LoginRouteImport.update({
 const EsqueciSenhaRoute = EsqueciSenhaRouteImport.update({
   id: '/esqueci-senha',
   path: '/esqueci-senha',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AssinaturaExpiradaRoute = AssinaturaExpiradaRouteImport.update({
-  id: '/assinatura-expirada',
-  path: '/assinatura-expirada',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -114,7 +108,6 @@ const AppAssinaturaRoute = AppAssinaturaRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/assinatura-expirada': typeof AssinaturaExpiradaRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -132,7 +125,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/assinatura-expirada': typeof AssinaturaExpiradaRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -152,7 +144,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
-  '/assinatura-expirada': typeof AssinaturaExpiradaRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -172,7 +163,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/assinatura-expirada'
     | '/esqueci-senha'
     | '/login'
     | '/redefinir-senha'
@@ -190,7 +180,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/assinatura-expirada'
     | '/esqueci-senha'
     | '/login'
     | '/redefinir-senha'
@@ -209,7 +198,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
-    | '/assinatura-expirada'
     | '/esqueci-senha'
     | '/login'
     | '/redefinir-senha'
@@ -229,7 +217,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
-  AssinaturaExpiradaRoute: typeof AssinaturaExpiradaRoute
   EsqueciSenhaRoute: typeof EsqueciSenhaRoute
   LoginRoute: typeof LoginRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
@@ -264,13 +251,6 @@ declare module '@tanstack/react-router' {
       path: '/esqueci-senha'
       fullPath: '/esqueci-senha'
       preLoaderRoute: typeof EsqueciSenhaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/assinatura-expirada': {
-      id: '/assinatura-expirada'
-      path: '/assinatura-expirada'
-      fullPath: '/assinatura-expirada'
-      preLoaderRoute: typeof AssinaturaExpiradaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -391,7 +371,6 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
-  AssinaturaExpiradaRoute: AssinaturaExpiradaRoute,
   EsqueciSenhaRoute: EsqueciSenhaRoute,
   LoginRoute: LoginRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,

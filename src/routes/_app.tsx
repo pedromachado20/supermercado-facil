@@ -20,21 +20,28 @@ const getSession = createServerFn({ method: 'GET' }).handler(async () => {
   return s ? { name: s.user.name, email: s.user.email } : null
 })
 
-const checkAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const request = getRequest()
-  const s = await auth.api.getSession({ headers: request.headers })
-  if (!s) throw redirect({ to: '/login' })
+// Assinatura expirada redireciona pra /assinatura em vez de uma tela de bloqueio separada —
+// a própria página já mostra o estado "expirada" com o botão de pagamento, então bloquear
+// nada além dela é suficiente (evita duplicar UI de bloqueio em dois lugares).
+const checkAuth = createServerFn({ method: 'GET' })
+  .inputValidator((d: { pathname: string }) => d)
+  .handler(async ({ data }) => {
+    const request = getRequest()
+    const s = await auth.api.getSession({ headers: request.headers })
+    if (!s) throw redirect({ to: '/login' })
 
-  const [sub] = await db.select({ status: subscriptions.status })
-    .from(subscriptions).where(eq(subscriptions.userId, s.user.id)).limit(1)
-  if (sub?.status === 'expirada') throw redirect({ to: '/assinatura-expirada' })
+    const [sub] = await db.select({ status: subscriptions.status })
+      .from(subscriptions).where(eq(subscriptions.userId, s.user.id)).limit(1)
+    if (sub?.status === 'expirada' && data.pathname !== '/assinatura') {
+      throw redirect({ to: '/assinatura' })
+    }
 
-  return null
-})
+    return null
+  })
 
 export const Route = createFileRoute('/_app')({
-  beforeLoad: async () => {
-    await checkAuth()
+  beforeLoad: async ({ location }) => {
+    await checkAuth({ data: { pathname: location.pathname } })
   },
   component: AppLayout,
 })
