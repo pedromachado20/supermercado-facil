@@ -172,6 +172,7 @@ function AppLayout() {
         background: 'var(--color-surface)',
         display: 'none',
         flexDirection: 'column',
+        overflowY: 'auto',
       }} id="sidebar-desktop">
         <style>{`@media (min-width: 768px) { #sidebar-desktop { display: flex !important; } }`}</style>
         <Sidebar />
@@ -192,6 +193,7 @@ function AppLayout() {
         transition: 'transform 0.25s ease',
         zIndex: 50,
         display: 'flex', flexDirection: 'column',
+        overflowY: 'auto',
       }}>
         <Sidebar onClose={() => setMobileOpen(false)} />
       </aside>
